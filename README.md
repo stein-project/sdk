@@ -507,16 +507,15 @@ You need a JDK 17 or newer to start Gradle (`JAVA_HOME`); Gradle finds or downlo
 with. The first `templateTest` downloads Minecraft 1.8.9 from Mojang and the MCP mappings into `build/sdk-home`.
 [`test/apitest`](test/apitest) is an in-game test of the whole API (see its README).
 
-## Contributing
+## Development
 
-Issues and pull requests are welcome. Read the [contributing guide](https://github.com/Stein-Project/.github/blob/main/CONTRIBUTING.md)
-first. Contributions require signing the [Contributor License Agreement](https://github.com/Stein-Project/.github/blob/main/CLA.md).
+This repository is private. The development guide is [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence
 
 The Stein SDK, the Stein Loader API, the template and the examples are licensed under the [MIT License](LICENSE).
 Third-party notices are in [NOTICE](NOTICE). The Stein name and logo are not covered by the licence: see the
-[trademark policy](TRADEMARK.md).
+[trademark policy](https://github.com/Stein-Project/.github/blob/main/TRADEMARK.md).
 
 Stein is not an official Minecraft product. It is not approved by or associated with Mojang or Microsoft.
 
