@@ -19,10 +19,12 @@ jobs:
         with:
           repository: Stein-Project/loader
           path: loader
+          ssh-key: ${{ secrets.LOADER_DEPLOY_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: Stein-Project/bridge
           path: bridge
+          ssh-key: ${{ secrets.BRIDGE_DEPLOY_KEY }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
