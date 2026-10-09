@@ -1,0 +1,82 @@
+# Publishes an SDK release (stein-sdk.jar, the mod template and the guide) when a v<version> tag is pushed; the tag
+# must match Sdk.VERSION. Run by hand (Actions > release > Run workflow) it only builds and keeps the files as a
+# workflow artifact, publishing nothing.
+#
+# The Gradle plugin and stein-api are built into the "maven-repo" folder of the artifact. The published plugins and the
+# template read both the jar and the Maven repository from x4vieer/stein-sdk (see SdkTool.RELEASES and
+# template/settings.gradle), so that folder is copied onto that repository's "maven" branch, and the files onto its
+# release, until the download addresses move here.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: sdk
+      - uses: actions/checkout@v4
+        with:
+          repository: Stein-Project/loader
+          path: loader
+          ssh-key: ${{ secrets.LOADER_DEPLOY_KEY }}
+      - uses: actions/checkout@v4
+        with:
+          repository: Stein-Project/bridge
+          path: bridge
+          ssh-key: ${{ secrets.BRIDGE_DEPLOY_KEY }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Version
+        id: version
+        working-directory: sdk
+        run: |
+          v=$(sed -n 's/.*String VERSION = "\([^"]*\)".*/\1/p' src/main/java/dev/xavier/stein/sdk/Sdk.java)
+          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v$v" ]]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match Sdk.VERSION $v"; exit 1
+          fi
+          for f in changelog/$v.en_US.md changelog/$v.pt_BR.md; do
+            [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }
+          done
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - name: Minecraft 1.8.9
+        working-directory: bridge
+        run: ./gradlew fetchMinecraft
+      - name: The Loader's API
+        working-directory: loader
+        run: ./gradlew apiJar apiSourcesJar -Pstein.mcDir="$GITHUB_WORKSPACE/bridge/build/mc"
+      - name: Build and check
+        working-directory: sdk
+        run: ./gradlew build templateTest pluginTest
+      - name: Files
+        run: |
+          mkdir dist
+          cp sdk/build/sdk/{stein-sdk.jar,stein-mod-template.zip,README.md} dist/
+          (cd dist && sha256sum * > SHA256SUMS)
+          cp -r sdk/build/maven-repo maven-repo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stein-sdk-${{ steps.version.outputs.version }}
+          path: |
+            dist/
+            maven-repo/
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pre=; [[ "$GITHUB_REF_NAME" == *-* ]] && pre=--prerelease
+          gh release create "$GITHUB_REF_NAME" dist/* -R "$GITHUB_REPOSITORY" $pre \
+            --title "Stein SDK ${{ steps.version.outputs.version }}" \
+            --notes-file "sdk/changelog/${{ steps.version.outputs.version }}.en_US.md"

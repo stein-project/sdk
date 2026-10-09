@@ -41,6 +41,12 @@ import java.util.regex.Pattern;
 final class SdkTool {
 
     static final String MC_VERSION = "1.8.9";
+
+    /**
+     * Where stein-sdk.jar releases are downloaded from. x4vieer/stein-sdk is the public release
+     * repository every published plugin reads (and the template's Maven repository lives on its
+     * "maven" branch); it changes only together with the template's settings.gradle and the guide.
+     */
     private static final String RELEASES =
             "https://github.com/x4vieer/stein-sdk/releases/download/v";
 

@@ -3,9 +3,9 @@ MIT License
 Copyright (c) 2026 Breno Xavier
 
 This licence covers everything in this repository: the Stein SDK tool (src/main/java), the Gradle plugin
-(gradle-plugin/), the mod template (template/) and the example mods (examples/). It also covers the Stein Loader API
-shipped inside stein-sdk.jar (stein-api.jar and stein-api-sources.jar). The rest of the Stein Loader and the Stein
-Bridge are covered by the Mozilla Public License 2.0 in their own repositories.
+(gradle-plugin/), the mod template (template/), the example mods (examples/) and the test mod (test/). It also
+covers the Stein Loader API shipped inside stein-sdk.jar (stein-api.jar and stein-api-sources.jar). The rest of the
+Stein Loader and the Stein Bridge are covered by the Mozilla Public License 2.0 in their own repositories.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the

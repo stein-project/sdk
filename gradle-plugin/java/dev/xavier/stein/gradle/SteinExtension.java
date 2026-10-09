@@ -16,17 +16,17 @@ import org.gradle.api.provider.Property;
  *
  * <pre>
  *   stein {
- * sdkVersion = "x.y.z" // the stein-sdk.jar release (default: the plugin's version)
+ *       sdkVersion = "x.y.z"                       // the stein-sdk.jar release (default: the plugin's)
  *       minecraftDir = file("D:/Games/.minecraft") // if .minecraft is not in the usual place
- * sdkJar = file("../stein-sdk.jar") // a local stein-sdk.jar instead of the downloaded one (tests)
+ *       sdkJar = file("../stein-sdk.jar")          // a local stein-sdk.jar, nothing downloaded
  *   }
  * </pre>
  */
 public abstract class SteinExtension {
 
     /**
-     * The stein-sdk.jar version, downloaded from
-     * github.com/x4vieer/stein-sdk/releases/download/v&lt;version&gt;.
+     * The stein-sdk.jar version, downloaded from the SDK releases ({@code SdkTool.RELEASES}, then
+     * v&lt;version&gt;/stein-sdk.jar).
      */
     public abstract Property<String> getSdkVersion();
 

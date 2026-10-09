@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2026 Breno Xavier
+ *
+ * Stein SDK example mod, licensed under the MIT License (see LICENSE).
+ */
+
 package com.example.damageindicator;
 
 import dev.xavier.stein.loader.api.Entities;

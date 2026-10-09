@@ -75,11 +75,11 @@ pluginManagement {
 
 // build.gradle
 plugins {
-    id 'dev.xavier.stein.mod' version '0.2.0'
+    id 'dev.xavier.stein.mod' version '0.2.3'
 }
 
 stein {                                          // all optional
-    sdkVersion = '0.2.0'                         // the stein-sdk.jar release to use (default: the plugin's version)
+    sdkVersion = '0.2.3'                         // the stein-sdk.jar release to use (default: the plugin's version)
     minecraftDir = file('D:/Games/.minecraft')   // if your .minecraft is not in the usual place
 }
 ```
@@ -295,7 +295,7 @@ it.
 | `Log.of(id)` | `[id] message` in the game log; `debug` with `-Dstein.debug=<id>` |
 | `Tasks`, `Http` | work off the game thread and back on it (`async`, `later`, `onGameThread`); `Http.getText` |
 | `Relations`, `Players` | who is ally / enemy / in your group, for every mod — see below; the Tab list, teams, groups, ping; `Players.list()` reads the whole Tab list in one pass (use it instead of asking nick by nick when drawing a list), plus the Tab `header`/`footer` and the list score |
-| `Render`, `WorldRender`, `Mesh`, `Blend` | 2D and 3D drawing without touching OpenGL — see Render and Drawing below (3D, lines, meshes and blend modes: Loader 0.1.23); also polygon fans, repeating textures (`texture(w, h, true)` + `drawFan`), items with your own count, effect icons, the Tab ping bars, player heads with the original skin on offline servers, text wrapping and the GUI size |
+| `Render`, `WorldRender`, `Mesh`, `Blend` | 2D and 3D drawing without touching OpenGL — see Render and Drawing below (3D, lines, meshes and blend modes: Loader 0.1.24); also polygon fans, repeating textures (`texture(w, h, true)` + `drawFan`), items with your own count, effect icons, the Tab ping bars, player heads with the original skin on offline servers, text wrapping and the GUI size |
 | `Server`, `Account` | the current server (normalised address, `connect`, `connectingAddress`), the session (offline nick, launcher account; never the token) |
 | `Lang.tr(key, args)` | your `assets/<id>/lang/*.lang` in the player's language (English as fallback); also `ctx.tr(...)` |
 | `Chat` | a line in the chat only for the player (`print`), the action bar, sending as the player (`send`, goes through `onSendChat`), reading and making text components |
@@ -358,7 +358,7 @@ OpenGL, `GlStateManager` or `Tessellator` directly will not.
 ### Drawing
 
 > The drawing API below (lines, outlines, gradients, arcs, meshes, blend modes and all of `WorldRender`) is new in the
-> Loader library **0.1.23** and still `@Experimental`.
+> Loader library **0.1.24** and still `@Experimental`: a mod using it sets `"loader": "0.1.24"`.
 
 **2D, in `Render`** (HUD elements, `onOverlay`, screens). Besides shapes, text, items and textures, it draws
 `Render.line` and `Render.polyline` (thick lines, a chart or a path), `Render.rectOutline`, `Render.gradient`
@@ -377,7 +377,7 @@ blocks; wrap the call in `WorldRender.throughWalls(() -> ...)` for markers that 
 public void onRenderWorld(float pt) {
     // The block you look at, outlined through walls, with a label over it.
     WorldRender.throughWalls(() -> {
-        WorldRender.blockOutline(x, y, z, 2, 0xFF55FFFF);
+        WorldRender.blockOutline(x, y, z, 0.02, 0xFF55FFFF);
         WorldRender.label("Chest", x + 0.5, y + 1.4, z + 0.5, 1, 0xFFFFFFFF);
     });
 }
@@ -472,9 +472,11 @@ classes: a class is only looked up when the code using it runs.
   quickly and do not allocate there. `onBlockModel` runs on the chunk-building threads, several at once: no shared
   mutable state without care, and no OpenGL. The F3 screen shows what each mod costs per frame ("Mod time"), counting
   its per-frame events and its HUD elements — keep yours low.
-- **Draw through `Render`, `WorldRender` and `Mesh`**; direct OpenGL, `GlStateManager` and `Tessellator` calls are not supported. Stein
-  runs the game on its own renderer in an OpenGL 4.1 core context: calls made directly (`glBegin`/`glVertex`, your own
-  display lists, `GlStateManager`, `Tessellator`) may draw nothing, and leave the state as you found it when you use `Render`.
+- **Draw through `Render`, `WorldRender` and `Mesh`**; direct OpenGL, `GlStateManager` and `Tessellator` calls are not
+  supported. Stein GFX, the default renderer, runs the game in an OpenGL 4.1 core context: a mod that calls old,
+  fixed-function OpenGL (`glBegin`/`glVertex`, display lists) is left out of the game, with the reason in the mod list,
+  and `GlStateManager` or `Tessellator` drawing may show nothing. The fixed-function pipeline is only a fallback for
+  older graphics cards.
 - **Save your settings** with `ModContext.of(this).config(Settings.class)`: it lands in `config/<your-id>.json` and survives a bad value.
 - **Be honest with servers.** Most servers forbid anything that plays for the player or gives a combat advantage (automated clicks, extended reach, hitting through others). Build things that show information or make the game nicer to use. The Loader tells the server which mods are loaded.
 
@@ -482,7 +484,8 @@ classes: a class is only looked up when the code using it runs.
 
 - **"reference(s) to the game that do not exist"** at build: a name that is not in 1.8.9, or a typo. The message
   names the class and member.
-- **Mod greyed out in the list:** the reason is next to it — missing dependency, Loader too old, broken manifest.
+- **Mod greyed out in the list:** the reason is next to it — missing dependency, Loader too old, broken manifest, old
+  OpenGL calls with Stein GFX.
 - **Mod failed to load:** the reason is in the list, the stack trace in `logs/latest.log`.
 - **Missing an event?** Tell us where in the game you need to hook in and what the Forge equivalent is. Events are how
   the Loader grows.
@@ -495,11 +498,14 @@ repository side by side, build the Loader (see its README), then:
 
 ```sh
 ./gradlew build            # build/sdk/stein-sdk.jar and build/sdk/stein-mod-template.zip
-./gradlew templateTest     # builds the template with the new jar
+./gradlew templateTest     # the template, the examples and test/apitest built with the new jar (command line)
+./gradlew pluginTest       # the template built by its own Gradle wrapper with the plugin from build/maven-repo
 ./gradlew publishPlugin    # the Gradle plugin and stein-api into build/maven-repo (-PsteinRepo=<folder>)
 ```
 
-You need a JDK 17 or newer to start Gradle (`JAVA_HOME`); Gradle finds or downloads the JDK 25 it compiles with.
+You need a JDK 17 or newer to start Gradle (`JAVA_HOME`); Gradle finds or downloads the JDK 25 it runs and compiles
+with. The first `templateTest` downloads Minecraft 1.8.9 from Mojang and the MCP mappings into `build/sdk-home`.
+[`test/apitest`](test/apitest) is an in-game test of the whole API (see its README).
 
 ## Contributing
 

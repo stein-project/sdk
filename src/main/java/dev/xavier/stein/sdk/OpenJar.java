@@ -49,14 +49,13 @@ import java.util.regex.Pattern;
  *       in the game.
  * </ul>
  *
- * <p>It is the same piece in this repository's build (which runs it as a source file) and in the
- * SDK (stein-sdk.jar).
+ * <p>It is the same piece in the SDK (stein-sdk.jar, for mods) and in the Stein Bridge and Loader
+ * builds, which run its {@code main}.
  *
  * <p>{@code --all} also opens every protected method: for code that only calls the game and never
  * overrides it (the Stein Bridge).
  *
- * <p>Usage: java -cp asm.jar OpenJar.java &lt;input.jar&gt; &lt;output.jar&gt; [--all | --access
- * steinmod.json]
+ * <p>Usage: OpenJar &lt;input.jar&gt; &lt;output.jar&gt; [--all | --access steinmod.json]
  */
 public final class OpenJar {
 

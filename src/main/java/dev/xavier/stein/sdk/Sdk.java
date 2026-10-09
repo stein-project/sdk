@@ -47,13 +47,12 @@ import javax.tools.ToolProvider;
  * Stein SDK: what mod authors need to compile a .steinmod, with nothing from the machine here.
  *
  * <pre>
- *   java -jar stein-sdk.jar setup      [--mc folder]  prepares the game for compiling (once)
- * java -jar stein-sdk.jar build [project] compiles the mod -&gt; build/&lt;Name&gt;.steinmod
- *   java -jar stein-sdk.jar install    [project]      builds and copies to the game's mods folder
- * java -jar stein-sdk.jar classpath [project] the jars for the IDE (with the project's "access", if
- * given)
- *   java -jar stein-sdk.jar pack       &lt;classes&gt; &lt;resources&gt; &lt;output.steinmod&gt;
- * translates, checks and packages already compiled classes
+ *   java -jar stein-sdk.jar setup     [--mc folder]  prepares the game for compiling (once)
+ *   java -jar stein-sdk.jar build     [project]      compiles the mod -&gt; build/&lt;Name&gt;.steinmod
+ *   java -jar stein-sdk.jar install   [project]      builds and copies it to the game's mods folder
+ *   java -jar stein-sdk.jar classpath [project]      the jars for the IDE (with the project's "access")
+ *   java -jar stein-sdk.jar pack      &lt;classes&gt; &lt;resources&gt; &lt;out.steinmod&gt;
+ *                                                    translates, checks and packs compiled classes
  * </pre>
  *
  * <p>The build is the compile followed by the pack. Separately, they serve the Gradle plugin
@@ -74,7 +73,7 @@ public final class Sdk {
      * SDK version (the release tooling reads it from here). The API bundled inside is versioned
      * separately.
      */
-    public static final String VERSION = "0.2.2";
+    public static final String VERSION = "0.2.3";
 
     static final String MC_VERSION = "1.8.9";
     private static final String MANIFEST =

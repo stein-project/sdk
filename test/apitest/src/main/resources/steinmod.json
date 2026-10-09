@@ -1,0 +1,10 @@
+{
+  "id": "apitest",
+  "name": "API Test",
+  "version": "1.0.0",
+  "author": "Stein SDK tests",
+  "description": "Runs the Stein Loader API in game and logs OK or FAILED for each check.",
+  "entry": "com.example.apitest.ApiTest",
+  "loader": "0.1.24",
+  "announce": false
+}

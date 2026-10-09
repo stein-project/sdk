@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.xavier.stein.mod' version '0.2.0'
+    id 'dev.xavier.stein.mod' version '0.2.3'
 }
 
 // ./gradlew build        -> build/libs/ExampleMod.steinmod

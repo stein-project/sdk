@@ -24,18 +24,17 @@ import java.util.stream.Stream;
  * same here.
  *
  * <pre>
- * game &lt;game.jar&gt; &lt;joined.srg&gt; &lt;fields.csv&gt; &lt;methods.csv&gt;
- * &lt;output.jar&gt;
+ *   game  &lt;game.jar&gt; &lt;joined.srg&gt; &lt;fields.csv&gt; &lt;methods.csv&gt; &lt;out.jar&gt;
  *         the game jar with readable names, to compile against
- * tosrg &lt;joined.srg&gt; &lt;fields.csv&gt; &lt;methods.csv&gt; &lt;readable-game.jar&gt;
- * &lt;input&gt; &lt;output&gt; [classpath...]
- * the compiled classes (folder), with the game's members under SRG names; the classpath (folders or
- * jars) joins
- *         the hierarchy, to find the game method that a class from there overrides
+ *   tosrg &lt;joined.srg&gt; &lt;fields.csv&gt; &lt;methods.csv&gt; &lt;readable-game.jar&gt;
+ *         &lt;input&gt; &lt;output&gt; [classpath...]
+ *         the compiled classes (folder), with the game's members under SRG names; the
+ *         classpath (folders or jars) joins the hierarchy, to find the game method that a
+ *         class from there overrides
  * </pre>
  *
- * <p>Usage: {@code java -cp asm.jar;asm-commons.jar
- * sdk/src/main/java/dev/xavier/stein/sdk/NamedBuild.java ...}
+ * <p>The Stein Bridge and Loader builds run it from stein-sdk's classes ({@code main} of this
+ * class, with ASM on the classpath).
  */
 public final class NamedBuild {
 

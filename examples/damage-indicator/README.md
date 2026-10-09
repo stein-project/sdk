@@ -1,11 +1,11 @@
 # Damage Indicator — example mod
 
-A small, complete Stein Loader mod on the (experimental) API of Stein Loader 0.1.23 (library 0.1.16). Read it top to bottom: it is
-short, and every part is something you will want in your own mod.
+A small, complete Stein Loader mod on the (experimental) API of the Loader library 0.1.24 (`"loader": "0.1.24"`). Read
+it top to bottom: it is short, and every part is something you will want in your own mod.
 
 | Feature | API used |
 |---|---|
-| Damage numbers over any entity that loses health, rising and fading | `onHealthChanged`, `onRenderWorld` |
+| Damage numbers over any entity that loses health, rising and fading | `onHealthChanged`, `onRenderWorld`, `WorldRender.label` |
 | The last hit you took, as a HUD element the player moves and scales | `HudElement`, `Hud.register`, `Entities` |
 | A key that turns the numbers on and off, with a note on the action bar | `Keys`, `Screens`, `Chat.actionBar` |
 | A Panel page: toggle, colour, **slider** (duration), **key picker** | `onPage`, `Option.slider`, `Option.key` |

@@ -12,15 +12,38 @@ cloned next to this repository; the SDK reads `../loader/build/libs/stein-api.ja
 ```sh
 ./gradlew spotlessApply  # google-java-format --aosp on every Java file
 ./gradlew build          # build/sdk/stein-sdk.jar and the mod template, formatting check
-./gradlew templateTest   # builds the template with the new jar and checks the result
+./gradlew templateTest   # the template, the examples and test/apitest built with the new jar, and the result checked
+./gradlew pluginTest     # the template built by its own Gradle wrapper with the plugin from build/maven-repo
 ./gradlew publishPlugin  # the Gradle plugin into build/maven-repo (-PsteinRepo=<folder>)
 ```
+
+A JDK 17 or newer starts Gradle; it finds or downloads the JDK 25 it runs and compiles with
+(`gradle/gradle-daemon-jvm.properties`, regenerated with `./gradlew updateDaemonJvm --jvm-version=25`).
+
+The Bridge and the Loader build with this repository's `NamedBuild` and `OpenJar` (as an included build): a change
+to `Mappings`, `NamedBuild` or `OpenJar` also changes how they are built. Build them too before opening a pull request.
 
 ## What to keep in mind
 
 - **Mod authors run this.** Error messages must say what is wrong and what to do about it.
+- **Existing mods keep building.** The commands, their arguments, the files they write and the `steinmod.json` keys
+  are what mod projects rely on: add, do not rename.
 - **Nothing from Mojang or MCP goes into the jars.** `stein-sdk setup` downloads the game and the mappings on the
   developer's machine. `./gradlew publishPlugin` fails if a jar contains game files.
 - **The template and the example are documentation.** Keep them small, commented and building with the latest
-  release. When the API changes, update the example and the guide (`README.md`) in the same pull request.
-- **Everything here is MIT-licensed**, so mods can use any licence. New files use the MIT header.
+  release. When the API changes, update the example and the guide (`README.md`) in the same pull request, and set
+  `"loader"` in their `steinmod.json` to the oldest Loader library version that has everything they use.
+  `test/apitest` runs the whole API in game; extend it when you add to the API.
+- **Everything here is MIT-licensed**, so mods can use any licence. New files use the MIT header. The template's
+  sources carry no header on purpose: they are the first files of someone else's mod.
+
+## Releases
+
+Push a `v<version>` tag matching `Sdk.VERSION`, with `changelog/<version>.en_US.md` and `.pt_BR.md` committed: the
+release workflow builds, runs the tests and publishes `stein-sdk.jar`, `stein-mod-template.zip` and the guide.
+The template, the example and the guide pin the plugin version: change them with `Sdk.VERSION`.
+
+The published Gradle plugins download `stein-sdk.jar` from the releases of `x4vieer/stein-sdk`, and the template reads
+the plugin from that repository's `maven` branch (`SdkTool.RELEASES`, `template/settings.gradle`, the guide). They
+are the public addresses every published version uses; move them together, and only once the new place serves the
+files.

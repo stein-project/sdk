@@ -41,6 +41,13 @@ java {
 sourceSets.main.java.srcDirs = ['java']
 sourceSets.main.resources.srcDirs = []
 
+// The licence and the notices go inside every jar that is published.
+tasks.withType(Jar).configureEach {
+    from(files(new File(root, 'LICENSE'), new File(root, 'NOTICE'))) {
+        into 'META-INF'
+    }
+}
+
 // The plugin runs in the mod author's Gradle, which may be on a Java older than the game's 25.
 tasks.withType(JavaCompile).configureEach {
     options.release = 17

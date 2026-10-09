@@ -5,19 +5,15 @@ import dev.xavier.stein.loader.api.Keys;
 import dev.xavier.stein.loader.api.Option;
 import dev.xavier.stein.loader.api.Page;
 import dev.xavier.stein.loader.api.SteinMod;
+import dev.xavier.stein.loader.api.WorldRender;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MovingObjectPosition;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
 
 /**
  * An example Stein Loader mod. It shows the main pieces of the API:
@@ -37,6 +33,9 @@ import org.lwjgl.opengl.GL11;
 public final class ExampleMod implements SteinMod {
 
     static final String ID = "examplemod";
+
+    /** Orange, opaque: colors are ARGB (0xAARRGGBB). */
+    private static final int OUTLINE_COLOR = 0xFFFFAA00;
 
     /**
      * Draw an outline around the block you look at. Toggled by the key, the Panel option and the
@@ -70,27 +69,11 @@ public final class ExampleMod implements SteinMod {
                 || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) {
             return;
         }
-        // The matrix is the camera's, with the origin at the player's eyes: subtract the
-        // interpolated camera position from anything you place in the world.
-        Entity cam = mc.getRenderViewEntity();
-        double x = cam.lastTickPosX + (cam.posX - cam.lastTickPosX) * partialTicks;
-        double y = cam.lastTickPosY + (cam.posY - cam.lastTickPosY) * partialTicks;
-        double z = cam.lastTickPosZ + (cam.posZ - cam.lastTickPosZ) * partialTicks;
+        // WorldRender takes world coordinates and sizes in blocks: the Loader handles the camera.
+        // Draw through it (or Render, for 2D) rather than with OpenGL or GlStateManager, which the
+        // Stein renderer does not support.
         BlockPos pos = hit.getBlockPos();
-        AxisAlignedBB box =
-                new AxisAlignedBB(pos, pos.add(1, 1, 1))
-                        .expand(0.003, 0.003, 0.003)
-                        .offset(-x, -y, -z);
-
-        // Leave the GL state as you found it.
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glLineWidth(2.5F);
-        RenderGlobal.drawOutlinedBoundingBox(box, 255, 170, 0, 255);
-        GL11.glLineWidth(1.0F);
-        GlStateManager.disableBlend();
-        GlStateManager.enableTexture2D();
+        WorldRender.blockOutline(pos.getX(), pos.getY(), pos.getZ(), 0.01, OUTLINE_COLOR);
     }
 
     @Override

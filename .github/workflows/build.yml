@@ -1,12 +1,20 @@
 # Builds the SDK (stein-sdk.jar carries the Loader's API, so the Loader is built first), checks the formatting and
-# runs a mod author's path from scratch: the SDK setup and a build of the template project. Minecraft 1.8.9 comes from
-# Mojang's CDN and is never published.
+# runs a mod author's path from scratch: the SDK setup, the template, the examples and the API test mod built with the
+# command line, and the template built by its own Gradle wrapper with the plugin. Minecraft 1.8.9 comes from Mojang's
+# CDN and is never published.
+#
+# The sibling repositories are read with deploy keys while they are private. Where the secrets are not available (pull
+# requests from forks), the ssh-key input is empty and actions/checkout falls back to plain https with the workflow
+# token, which reads them once they are public.
 name: build
 
 on:
   pull_request:
   push:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -39,4 +47,4 @@ jobs:
         run: ./gradlew apiJar apiSourcesJar -Pstein.mcDir=${{ github.workspace }}/bridge/build/mc
       - name: Build and check
         working-directory: sdk
-        run: ./gradlew build templateTest
+        run: ./gradlew build templateTest pluginTest

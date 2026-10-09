@@ -155,9 +155,13 @@ final class Mappings {
     static final class Hierarchy {
         private final Map<String, String[]> supers = new HashMap<>();
         private final Map<String, Set<String>> fieldsOf = new HashMap<>();
+        private final Set<String> publicClasses = new HashSet<>();
 
         void add(byte[] classBytes) {
             ClassReader r = new ClassReader(classBytes);
+            if ((r.getAccess() & Opcodes.ACC_PUBLIC) != 0) {
+                publicClasses.add(r.getClassName());
+            }
             String[] itf = r.getInterfaces();
             String[] all = new String[itf.length + 1];
             all[0] = r.getSuperName();
@@ -182,15 +186,16 @@ final class Mappings {
 
         /**
          * The class that declares the field, searched from {@code owner} upwards; {@code owner} if
-         * the field is protected (a subclass must name itself to reach it: JLS 6.6.2) or if none of
-         * the known classes declares it.
+         * the field is protected (a subclass must name itself to reach it: JLS 6.6.2), if the
+         * declaring class is not public (naming it from another package would fail the JVM's access
+         * check) or if none of the known classes declares it.
          */
         String fieldOwner(String owner, String name, String desc) {
             String key = name + ":" + desc;
             for (String c : chain(owner)) {
                 Set<String> f = fieldsOf.get(c);
                 if (f != null && f.contains(key)) {
-                    return c;
+                    return c.equals(owner) || publicClasses.contains(c) ? c : owner;
                 }
             }
             return owner;

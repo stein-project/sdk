@@ -5,5 +5,5 @@
   "author": "Stein examples",
   "description": "Example mod: damage numbers over entities and the last hit you took on the HUD.",
   "entry": "com.example.damageindicator.DamageIndicator",
-  "loader": "0.1.16"
+  "loader": "0.1.24"
 }
