@@ -1,0 +1,40 @@
+# Builds the SDK (stein-sdk.jar carries the Loader's API, so the Loader is built first), checks the formatting and
+# runs a mod author's path from scratch: the SDK setup and a build of the template project. Minecraft 1.8.9 comes from
+# Mojang's CDN and is never published.
+name: build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: sdk
+      - uses: actions/checkout@v4
+        with:
+          repository: Stein-Project/loader
+          path: loader
+      - uses: actions/checkout@v4
+        with:
+          repository: Stein-Project/bridge
+          path: bridge
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      # Also checks that gradle-wrapper.jar is the official one.
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Minecraft 1.8.9
+        working-directory: bridge
+        run: ./gradlew fetchMinecraft
+      - name: The Loader's API
+        working-directory: loader
+        run: ./gradlew apiJar apiSourcesJar -Pstein.mcDir=${{ github.workspace }}/bridge/build/mc
+      - name: Build and check
+        working-directory: sdk
+        run: ./gradlew build templateTest

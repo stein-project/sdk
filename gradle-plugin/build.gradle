@@ -1,0 +1,114 @@
+// The dev.xavier.stein.mod plugin: Gradle compiles the mod, and stein-sdk.jar (downloaded from the SDK release) translates,
+// checks and packages the .steinmod — the same code as "java -jar stein-sdk.jar build".
+//
+// The version is the SDK's (Sdk.VERSION): plugin 0.2.0 uses stein-sdk.jar 0.2.0, and ships in the same release.
+//
+//   ./gradlew publishPlugin (at the repository root)    -> build/maven-repo (at the repository root)
+//   -PsteinRepo=<folder>                                publishes into <folder> instead
+//
+// build/maven-repo is what the SDK release pushes to the repository's "maven" branch, from where the Gradle
+// of mod authors reads it (raw.githubusercontent.com, no login). The Loader's stein-api goes along, with sources.
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+}
+
+def root = file('..')
+// The Stein Loader (the stein-api version): the loader repository next to this one, or -PloaderDir=...
+def loaderDir = file(findProperty('loaderDir') ?: new File(root, '../loader'))
+def versionOf = { path ->
+    def m = (path instanceof File ? path : new File(root, path)).text =~ /String VERSION = "([^"]+)"/
+    if (!m.find()) throw new GradleException("no VERSION in $path")
+    m.group(1)
+}
+
+group = 'dev.xavier.stein'
+version = versionOf('src/main/java/dev/xavier/stein/sdk/Sdk.java')
+layout.buildDirectory = new File(root, 'build/gradle-plugin')
+// -PsteinRepo=<folder>: publishes into a copy of the "maven" branch (the release workflow), not into build/maven-repo. Publishing there
+// directly, rather than copying over afterwards, is what makes maven-metadata.xml merge the new version with the earlier ones.
+def mavenRepo = findProperty('steinRepo') ? file(findProperty('steinRepo')) : new File(root, 'build/maven-repo')
+
+base {
+    archivesName = 'stein-gradle'
+}
+
+java {
+    withSourcesJar()
+}
+
+// The plugin sources live in java/, without src/main.
+sourceSets.main.java.srcDirs = ['java']
+sourceSets.main.resources.srcDirs = []
+
+// The plugin runs in the mod author's Gradle, which may be on a Java older than the game's 25.
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+    options.encoding = 'UTF-8'
+}
+
+// The SDK version the plugin downloads when the project does not name another: its own.
+def versionResource = layout.buildDirectory.dir('generated/version')
+def writeVersion = tasks.register('writeVersion') {
+    def v = project.version.toString()
+    inputs.property('version', v)
+    outputs.dir(versionResource)
+    doLast {
+        def f = versionResource.get().file('dev/xavier/stein/gradle/version.txt').asFile
+        f.parentFile.mkdirs()
+        f.text = v
+    }
+}
+sourceSets.main.resources.srcDir(writeVersion)
+
+gradlePlugin {
+    plugins {
+        steinMod {
+            id = 'dev.xavier.stein.mod'
+            implementationClass = 'dev.xavier.stein.gradle.SteinPlugin'
+            displayName = 'Stein Loader mod'
+            description = 'Builds Stein Loader mods (.steinmod) for the Minecraft 1.8.9 client with the Stein SDK.'
+        }
+    }
+}
+
+publishing {
+    publications.withType(MavenPublication).configureEach {
+        pom {
+            url = 'https://github.com/Stein-Project/sdk'
+            licenses {
+                license {
+                    name = 'MIT'
+                    url = 'https://github.com/Stein-Project/sdk/blob/main/LICENSE'
+                }
+            }
+        }
+    }
+    publications {
+        // The pluginMaven (the plugin jar) and the dev.xavier.stein.mod.gradle.plugin marker come from java-gradle-plugin.
+        // The stein-api comes from the loader build (../loader/build/libs); it only goes in once that is built.
+        def api = new File(loaderDir, 'build/libs/stein-api.jar')
+        def apiSources = new File(loaderDir, 'build/libs/stein-api-sources.jar')
+        if (api.isFile() && apiSources.isFile()) {
+            steinApi(MavenPublication) {
+                groupId = 'dev.xavier.stein'
+                artifactId = 'stein-api'
+                version = versionOf(new File(loaderDir, 'src/main/java/dev/xavier/stein/loader/Loader.java'))
+                artifact(api)
+                artifact(apiSources) {
+                    classifier = 'sources'
+                }
+                pom {
+                    name = 'Stein Loader API'
+                    description = 'The mod API of Stein Loader (experimental), compiled with MCP names.'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'stein'
+            url = mavenRepo.toURI()
+        }
+    }
+}

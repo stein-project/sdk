@@ -1,0 +1,14 @@
+pluginManagement {
+    repositories {
+        // The Stein Gradle plugin (dev.xavier.stein.mod) lives here.
+        maven { url = uri("https://raw.githubusercontent.com/x4vieer/stein-sdk/maven") }
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    // Downloads JDK 25 for compiling if you do not have it installed.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'damage-indicator'

@@ -1,0 +1,9 @@
+# gradlew is a shell script: with CRLF (a Windows checkout, including the CI one that packs the template) it does not
+# run on the Linux or macOS of whoever downloads the template. The .bat keeps CRLF, and the wrapper jar is binary.
+# LF in every checkout, Windows too: the formatter and .editorconfig expect it, and scripts need it.
+* text=auto eol=lf
+*.sh text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.png binary

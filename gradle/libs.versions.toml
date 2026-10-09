@@ -1,0 +1,13 @@
+# Every library and plugin version of the build, in one place. Gradle checks each download against the sha256 in
+# gradle/verification-metadata.xml.
+[versions]
+asm = "9.10.1"
+google-java-format = "1.36.1"
+
+[libraries]
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
+asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
+
+[plugins]
+spotless = { id = "com.diffplug.spotless", version = "8.10.4" }

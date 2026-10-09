@@ -1,0 +1,9 @@
+{
+  "id": "examplemod",
+  "name": "Example Mod",
+  "version": "1.0.0",
+  "author": "You",
+  "description": "A starting point for Stein Loader mods: key binding, world rendering, a client command, a HUD element and a settings screen.",
+  "entry": "com.example.examplemod.ExampleMod",
+  "loader": "0.1.14"
+}

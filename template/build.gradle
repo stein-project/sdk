@@ -1,0 +1,11 @@
+plugins {
+    id 'dev.xavier.stein.mod' version '0.2.0'
+}
+
+// ./gradlew build        -> build/libs/ExampleMod.steinmod
+// ./gradlew installMod   -> build, then copy into .minecraft/mods
+//
+// Optional settings:
+// stein {
+//     minecraftDir = file('D:/Games/.minecraft')   // if your .minecraft is not in the usual place
+// }

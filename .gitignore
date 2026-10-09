@@ -1,0 +1,16 @@
+# Build output and downloaded dependencies
+build/
+libs/
+bin/
+out/
+.gradle/
+*.class
+*.jar
+
+# The Gradle wrapper is what lets "./gradlew build" run without Gradle installed.
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# IDEs
+.idea/
+.vscode/
+*.iml
