@@ -47,5 +47,5 @@ The release goes to the public distribution repository `Stein-Project/stein-sdk`
 the examples, `LICENSE` and `NOTICE` on its `main` branch, and the Gradle plugin and `stein-api` on its `maven` branch.
 The Gradle plugin downloads `stein-sdk.jar` from those releases and the template reads the plugin from that `maven`
 branch (`SdkTool.RELEASES`, `template/settings.gradle`, the examples, the guide); move them together. Plugins and
-templates published before the move read `x4vieer/stein-sdk`: while the repository variable `MIRROR_OWNER` is set,
-the workflow publishes the same release and `maven` branch there too.
+templates published before the move read `x4vieer/stein-sdk`, which is frozen: they keep the versions already
+there, and new versions go only to `Stein-Project/stein-sdk` (whose `maven` branch started as a copy of the old one).

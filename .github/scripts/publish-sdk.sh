@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Publishes the SDK built by release.yml in ONE distribution repository: the guide (page/) on its main branch, the
-# Gradle plugin and stein-api on its "maven" branch, and the release (dist/ and notes.md). Called once for
-# Stein-Project/stein-sdk and once for the transition mirror (x4vieer/stein-sdk), each with its token in GH_TOKEN.
-# Ported from the sdk part of stein-master tools/publish.sh.
+# Publishes the SDK built by release.yml in the distribution repository (Stein-Project/stein-sdk), with the token in
+# GH_TOKEN: the guide (page/) on its main branch, the Gradle plugin and stein-api on its "maven" branch, and the
+# release (dist/ and notes.md). Ported from the sdk part of stein-master tools/publish.sh.
 #
 #   publish-sdk.sh <owner/stein-sdk> <secret name> <commit author name> <commit author email>
-#   env: VERSION, SEED_OWNER (optional: where the "maven" branch is copied from the first time, the mirror)
+#   env: VERSION, LEGACY_OWNER (optional: the old account whose public "maven" branch is copied, read only and without
+#        a token, the first time; its own repository is frozen and never written)
 # Run from the workspace root (sdk/ is the checkout of this repository).
 set -euo pipefail
 REPO="${1:?repository}"; SECRET="${2:?secret}"; NAME="${3:?name}"; EMAIL="${4:?email}"
@@ -26,14 +26,15 @@ dist_push_dir "$REPO" main page "Stein SDK $VERSION" "$NAME" "$EMAIL"
 # plugin is published INSIDE a copy of the branch, not copied onto it: Gradle only adds, the new version next to the
 # old ones and maven-metadata.xml with all of them. Nothing there is ever deleted: an old mod project keeps finding the
 # version it asks for. The first time (the organisation's branch does not exist yet) the branch starts as a copy of
-# the mirror's, so the versions published before the move are served from the new address too.
+# the old account's public one (read only), so the versions published before the move are served from the new
+# address too.
 work="$(mktemp -d)"
 if git clone -q --branch maven --single-branch "$url" "$work/maven" 2>/dev/null; then
   :
-elif [ -n "${SEED_OWNER:-}" ] && [ "$SEED_OWNER/stein-sdk" != "$REPO" ] \
-    && git clone -q --branch maven --single-branch "https://github.com/$SEED_OWNER/stein-sdk.git" "$work/maven" 2>/dev/null; then
-  echo "maven branch started from $SEED_OWNER/stein-sdk"
-  sed -i "s|raw.githubusercontent.com/$SEED_OWNER/stein-sdk/maven|raw.githubusercontent.com/$REPO/maven|g; s|github.com/$SEED_OWNER/stein-sdk|github.com/$REPO|g" \
+elif [ -n "${LEGACY_OWNER:-}" ] && [ "$LEGACY_OWNER/stein-sdk" != "$REPO" ] \
+    && git clone -q --branch maven --single-branch "https://github.com/$LEGACY_OWNER/stein-sdk.git" "$work/maven" 2>/dev/null; then
+  echo "maven branch started from $LEGACY_OWNER/stein-sdk"
+  sed -i "s|raw.githubusercontent.com/$LEGACY_OWNER/stein-sdk/maven|raw.githubusercontent.com/$REPO/maven|g; s|github.com/$LEGACY_OWNER/stein-sdk|github.com/$REPO|g" \
     "$work/maven/README.md" 2>/dev/null || true
 else
   git init -q -b maven "$work/maven"
@@ -62,7 +63,7 @@ fi
     printf '%s\n' "$velhos" | xargs git checkout -q HEAD --
   fi
   # No new file (the same version again): maven-metadata.xml would only change its time, nothing to commit. A branch
-  # copied from the mirror is still pushed when this repository does not have it yet.
+  # copied from the old account is still pushed when this repository does not have it yet.
   novo=0
   if [ -n "$(git diff --cached --name-only --diff-filter=A)" ]; then
     git -c user.name="$NAME" -c user.email="$EMAIL" commit -q -m "Stein SDK $VERSION (Gradle plugin)"

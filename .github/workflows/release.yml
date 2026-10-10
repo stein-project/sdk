@@ -11,20 +11,18 @@
 #   1. the changelog is required before anything is built: changelog/<version>.en_US.md and .pt_BR.md;
 #   2. on Stein-Project/stein-sdk: main gets the guide (README.md without the sections for whoever builds the SDK),
 #      LICENSE, NOTICE and examples/; the "maven" branch gets the Gradle plugin dev.xavier.stein.mod and stein-api
-#      (added next to the earlier versions, never replacing them; the first time it starts as a copy of the mirror's
-#      branch, so the old versions are served from the new address too); release v<version> gets stein-sdk.jar and
-#      stein-mod-template.zip. The template and the plugin read both (template/settings.gradle, SdkTool.RELEASES);
-#   3. transition mirror: while the repository variable MIRROR_OWNER is set (x4vieer), the same goes to
-#      <MIRROR_OWNER>/stein-sdk, which the plugins and templates published before the move read. Empty turns it off;
-#   4. Discord: the notes in #changelog and the downloads message rewritten (optional, as in the installer).
+#      (added next to the earlier versions, never replacing them; the first time it starts as a copy of the public
+#      branch of the old account, LEGACY_OWNER/stein-sdk, read only, so the old versions are served from the new
+#      address too); release v<version> gets stein-sdk.jar and stein-mod-template.zip. The template and the plugin
+#      read both (template/settings.gradle, SdkTool.RELEASES). The old x4vieer/stein-sdk is frozen: nothing goes there;
+#   3. Discord: the notes in #changelog and the downloads message rewritten (optional, as in the installer).
 # Running the same tag again publishes nothing twice.
 #
 # Settings of this repository (see LEIA-ME.md of the local stein-project folder):
 #   secrets    LOADER_DEPLOY_KEY, BRIDGE_DEPLOY_KEY   read the private sibling repositories
-#              DIST_TOKEN (Contents: read and write on Stein-Project/stein-sdk), MIRROR_TOKEN (on
-#              <MIRROR_OWNER>/stein-sdk), DISCORD_BOT_TOKEN (optional)
-#   variables  MIRROR_OWNER, DIST_OWNER (optional, default Stein-Project), DISCORD_CANAL_DOWNLOADS,
-#              DISCORD_CANAL_CHANGELOG (optional)
+#              DIST_TOKEN (Contents: read and write on Stein-Project/stein-sdk), DISCORD_BOT_TOKEN (optional)
+#   variables  DIST_OWNER (optional, default Stein-Project), LEGACY_OWNER (optional, default x4vieer),
+#              DISCORD_CANAL_DOWNLOADS, DISCORD_CANAL_CHANGELOG (optional)
 name: release
 
 on:
@@ -45,7 +43,6 @@ jobs:
     timeout-minutes: 60
     env:
       DIST_OWNER: ${{ vars.DIST_OWNER || 'Stein-Project' }}
-      MIRROR_OWNER: ${{ vars.MIRROR_OWNER }}
       ENSAIO: ${{ github.event_name != 'push' }}
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +148,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          echo "release v$VERSION -> $DIST_OWNER/stein-sdk${MIRROR_OWNER:+ and the mirror $MIRROR_OWNER/stein-sdk}:"
+          echo "release v$VERSION -> $DIST_OWNER/stein-sdk:"
           ls dist; echo "main:"; find page -maxdepth 2 | sort
           echo "maven:"; find sdk/build/maven-repo -type f -name '*.pom'
           export PRINT=1 ROTULO="Stein SDK" VERSAO="$VERSION" NOTAS="sdk/changelog/$VERSION.pt_BR.md" \
@@ -165,19 +162,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DIST_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
-          SEED_OWNER: ${{ vars.MIRROR_OWNER || 'x4vieer' }}
+          LEGACY_OWNER: ${{ vars.LEGACY_OWNER || 'x4vieer' }}
         run: |
           bash sdk/.github/scripts/publish-sdk.sh "$DIST_OWNER/stein-sdk" DIST_TOKEN \
             "$(git -C sdk log -1 --format=%an)" "$(git -C sdk log -1 --format=%ae)"
-
-      - name: Mirror (${{ env.MIRROR_OWNER }}/stein-sdk)
-        if: env.ENSAIO != 'true' && env.MIRROR_OWNER != ''
-        env:
-          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          bash sdk/.github/scripts/publish-sdk.sh "$MIRROR_OWNER/stein-sdk" MIRROR_TOKEN \
-            "$MIRROR_OWNER" "$MIRROR_OWNER@users.noreply.github.com"
 
       - name: Discord
         if: env.ENSAIO != 'true'

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Helpers of the release workflows, sourced (". .github/scripts/dist.sh"). They write to a public distribution
-# repository with the token in GH_TOKEN: the organisation's (Stein-Project/stein-*, secret DIST_TOKEN) or, while the
-# transition mirror is on, the old account's (x4vieer/stein-*, secret MIRROR_TOKEN).
+# Helpers of the release workflows, sourced (". .github/scripts/dist.sh"). They write to the organisation's public
+# distribution repository (Stein-Project/stein-*) with the token in GH_TOKEN (secret DIST_TOKEN).
 #
 # Ported from stein-master tools/publish.sh. The same file is kept in the installer, client and sdk repositories
 # (.github/scripts/dist.sh): change all three together.

@@ -17,7 +17,9 @@ set -uo pipefail
 TOKEN="${DISCORD_BOT_TOKEN:-}"
 PRINT="${PRINT:-0}"
 DIST_OWNER="${DIST_OWNER:-Stein-Project}"
-MIRROR_OWNER="${MIRROR_OWNER:-}"
+# The old account (read only, public, no token of its own): its last releases of the loader, client and sdk stay
+# there frozen, and are listed only while the organisation has none of that component yet.
+LEGACY_OWNER="${LEGACY_OWNER:-x4vieer}"
 # The mods are still released from stein-master to the old account.
 MODS_OWNER="${MODS_OWNER:-x4vieer}"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
@@ -110,10 +112,10 @@ downloads() {
   command -v gh >/dev/null 2>&1 || { echo "needs the gh CLI" >&2; return 1; }
   local id onde repo rotulo arquivo resumo dono
   # The last published release of each component, once. A distribution component not yet released by the
-  # organisation (the first days of the move) falls back to the mirror, where it still is.
+  # organisation (the first days of the move) falls back to its last release on the old account.
   while IFS='|' read -r id onde repo rotulo arquivo resumo; do
     [ -n "$id" ] || continue
-    if [ "$onde" = mods ]; then donos="$MODS_OWNER"; else donos="$DIST_OWNER $MIRROR_OWNER"; fi
+    if [ "$onde" = mods ]; then donos="$MODS_OWNER"; else donos="$DIST_OWNER $LEGACY_OWNER"; fi
     for dono in $donos; do
       if gh release view --repo "$dono/$repo" --json tagName,publishedAt > "$TMP/$id.json" 2>/dev/null; then
         echo "$dono" > "$TMP/$id.owner"; break
