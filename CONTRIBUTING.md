@@ -43,7 +43,9 @@ Push a `v<version>` tag matching `Sdk.VERSION`, with `changelog/<version>.en_US.
 release workflow builds, runs the tests and publishes `stein-sdk.jar`, `stein-mod-template.zip` and the guide.
 The template, the example and the guide pin the plugin version: change them with `Sdk.VERSION`.
 
-The published Gradle plugins download `stein-sdk.jar` from the releases of `x4vieer/stein-sdk`, and the template reads
-the plugin from that repository's `maven` branch (`SdkTool.RELEASES`, `template/settings.gradle`, the guide). They
-are the public addresses every published version uses; move them together, and only once the new place serves the
-files.
+The release goes to the public distribution repository `Stein-Project/stein-sdk`: the files on its release, the guide,
+the examples, `LICENSE` and `NOTICE` on its `main` branch, and the Gradle plugin and `stein-api` on its `maven` branch.
+The Gradle plugin downloads `stein-sdk.jar` from those releases and the template reads the plugin from that `maven`
+branch (`SdkTool.RELEASES`, `template/settings.gradle`, the examples, the guide); move them together. Plugins and
+templates published before the move read `x4vieer/stein-sdk`: while the repository variable `MIRROR_OWNER` is set,
+the workflow publishes the same release and `maven` branch there too.

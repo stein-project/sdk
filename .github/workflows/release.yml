@@ -1,11 +1,30 @@
-# Publishes an SDK release (stein-sdk.jar, the mod template and the guide) when a v<version> tag is pushed; the tag
-# must match Sdk.VERSION. Run by hand (Actions > release > Run workflow) it only builds and keeps the files as a
-# workflow artifact, publishing nothing.
+# Releases the SDK to the public distribution repository Stein-Project/stein-sdk. Ported from stein-master
+# release-sdk.yml and the sdk parts of _release.yml and tools/publish.sh.
 #
-# The Gradle plugin and stein-api are built into the "maven-repo" folder of the artifact. The published plugins and the
-# template read both the jar and the Maven repository from x4vieer/stein-sdk (see SdkTool.RELEASES and
-# template/settings.gradle), so that folder is copied onto that repository's "maven" branch, and the files onto its
-# release, until the download addresses move here.
+#   git tag v0.2.4 && git push origin v0.2.4      the tag must be v<Sdk.VERSION>
+#
+# Run by hand (Actions > release > Run workflow) it is a dry run (ensaio): it builds, runs the tests, checks the
+# changelog, keeps the files (and the Maven repository) as a workflow artifact and prints the notes and the Discord
+# messages, publishing nothing.
+#
+# On a tag:
+#   1. the changelog is required before anything is built: changelog/<version>.en_US.md and .pt_BR.md;
+#   2. on Stein-Project/stein-sdk: main gets the guide (README.md without the sections for whoever builds the SDK),
+#      LICENSE, NOTICE and examples/; the "maven" branch gets the Gradle plugin dev.xavier.stein.mod and stein-api
+#      (added next to the earlier versions, never replacing them; the first time it starts as a copy of the mirror's
+#      branch, so the old versions are served from the new address too); release v<version> gets stein-sdk.jar and
+#      stein-mod-template.zip. The template and the plugin read both (template/settings.gradle, SdkTool.RELEASES);
+#   3. transition mirror: while the repository variable MIRROR_OWNER is set (x4vieer), the same goes to
+#      <MIRROR_OWNER>/stein-sdk, which the plugins and templates published before the move read. Empty turns it off;
+#   4. Discord: the notes in #changelog and the downloads message rewritten (optional, as in the installer).
+# Running the same tag again publishes nothing twice.
+#
+# Settings of this repository (see LEIA-ME.md of the local stein-project folder):
+#   secrets    LOADER_DEPLOY_KEY, BRIDGE_DEPLOY_KEY   read the private sibling repositories
+#              DIST_TOKEN (Contents: read and write on Stein-Project/stein-sdk), MIRROR_TOKEN (on
+#              <MIRROR_OWNER>/stein-sdk), DISCORD_BOT_TOKEN (optional)
+#   variables  MIRROR_OWNER, DIST_OWNER (optional, default Stein-Project), DISCORD_CANAL_DOWNLOADS,
+#              DISCORD_CANAL_CHANGELOG (optional)
 name: release
 
 on:
@@ -14,11 +33,20 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DIST_OWNER: ${{ vars.DIST_OWNER || 'Stein-Project' }}
+      MIRROR_OWNER: ${{ vars.MIRROR_OWNER }}
+      ENSAIO: ${{ github.event_name != 'push' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,23 +61,25 @@ jobs:
           repository: Stein-Project/bridge
           path: bridge
           ssh-key: ${{ secrets.BRIDGE_DEPLOY_KEY }}
+
+      # First on purpose: a release without its notes stops in seconds, not after the build.
+      - name: Version and changelog
+        id: version
+        run: |
+          v=$(sed -n 's/.*String VERSION = "\([^"]*\)".*/\1/p' sdk/src/main/java/dev/xavier/stein/sdk/Sdk.java)
+          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v$v" ]]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match Sdk.VERSION $v"; exit 1
+          fi
+          bash sdk/.github/scripts/changelog.sh check sdk/changelog "$v"
+          loader=$(sed -n 's/.*String VERSION = "\([^"]*\)".*/\1/p' loader/src/main/java/dev/xavier/stein/loader/Loader.java)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "loader=$loader" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Version
-        id: version
-        working-directory: sdk
-        run: |
-          v=$(sed -n 's/.*String VERSION = "\([^"]*\)".*/\1/p' src/main/java/dev/xavier/stein/sdk/Sdk.java)
-          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v$v" ]]; then
-            echo "::error::tag $GITHUB_REF_NAME does not match Sdk.VERSION $v"; exit 1
-          fi
-          for f in changelog/$v.en_US.md changelog/$v.pt_BR.md; do
-            [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }
-          done
-          echo "version=$v" >> "$GITHUB_OUTPUT"
       - name: Minecraft 1.8.9
         working-directory: bridge
         run: ./gradlew fetchMinecraft
@@ -59,24 +89,106 @@ jobs:
       - name: Build and check
         working-directory: sdk
         run: ./gradlew build templateTest pluginTest
-      - name: Files
+
+      - name: Files, page and notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LOADER: ${{ steps.version.outputs.loader }}
         run: |
-          mkdir dist
-          cp sdk/build/sdk/{stein-sdk.jar,stein-mod-template.zip,README.md} dist/
-          (cd dist && sha256sum * > SHA256SUMS)
-          cp -r sdk/build/maven-repo maven-repo
-      - uses: actions/upload-artifact@v4
+          mkdir dist page
+          cp sdk/build/sdk/stein-sdk.jar sdk/build/sdk/stein-mod-template.zip dist/
+          # Nothing from Mojang or MCP: setup uses the Minecraft jar already on the mod author's machine.
+          for f in dist/*; do
+            if unzip -Z1 "$f" | grep -qE '1\.8\.9|minecraft'; then echo "::error::$f has game files inside"; exit 1; fi
+          done
+          # The page of the distribution repository: the guide without the sections about building the SDK itself
+          # (they talk about this private repository), the licence, the notices and the examples as committed.
+          awk '/^## /{skip = ($0 == "## Building the SDK" || $0 == "## Development")} !skip' sdk/README.md > page/README.md
+          cp sdk/LICENSE sdk/NOTICE page/
+          git -C sdk archive --format=tar HEAD examples | tar -x -C page
+          ch=sdk/changelog/$VERSION.en_US.md
+          cl() { bash sdk/.github/scripts/changelog.sh "$1" "$ch"; }
+          {
+            echo "## $(cl title)"
+            echo
+            cl summary
+            echo
+            cl body
+            echo
+            echo "**For mod developers.** The API is **experimental**: it may still change between Stein Loader versions"
+            echo "(everything marked \`@Experimental\`). This SDK carries the API of Stein Loader $LOADER: in \`steinmod.json\`"
+            echo "a mod asks for it with \`\"loader\": \"$LOADER\"\`."
+            echo
+            echo "**Start:** unzip \`stein-mod-template.zip\` and run \`./gradlew build\` (JDK 17+ to run Gradle; the Gradle"
+            echo "plugin \`dev.xavier.stein.mod\` $VERSION downloads this SDK and builds the game with readable names on"
+            echo "your machine). Without Gradle: with JDK 25, \`java -jar stein-sdk.jar setup\` once, then"
+            echo "\`java -jar stein-sdk.jar build\`. The guide, an example mod and the licence are in the"
+            echo "[repository](https://github.com/$DIST_OWNER/stein-sdk)."
+            echo
+            echo "Nothing from Mojang or MCP is inside: \`setup\` uses the Minecraft jar already on your machine."
+            echo
+            echo "**SHA-256**"
+            for f in dist/*; do echo "\`$(basename "$f")\` \`$(sha256sum "$f" | cut -d' ' -f1)\`"; done
+          } > notes.md
+          ls -la dist page
+          echo "::group::release notes"; cat notes.md; echo "::endgroup::"
+
+      - name: Keep the files (dry run)
+        if: env.ENSAIO == 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: stein-sdk-${{ steps.version.outputs.version }}
           path: |
             dist/
-            maven-repo/
-      - name: Publish
-        if: startsWith(github.ref, 'refs/tags/')
+            page/
+            notes.md
+            sdk/build/maven-repo/
+          retention-days: 14
+
+      - name: What it would publish (dry run)
+        if: env.ENSAIO == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          pre=; [[ "$GITHUB_REF_NAME" == *-* ]] && pre=--prerelease
-          gh release create "$GITHUB_REF_NAME" dist/* -R "$GITHUB_REPOSITORY" $pre \
-            --title "Stein SDK ${{ steps.version.outputs.version }}" \
-            --notes-file "sdk/changelog/${{ steps.version.outputs.version }}.en_US.md"
+          echo "release v$VERSION -> $DIST_OWNER/stein-sdk${MIRROR_OWNER:+ and the mirror $MIRROR_OWNER/stein-sdk}:"
+          ls dist; echo "main:"; find page -maxdepth 2 | sort
+          echo "maven:"; find sdk/build/maven-repo -type f -name '*.pom'
+          export PRINT=1 ROTULO="Stein SDK" VERSAO="$VERSION" NOTAS="sdk/changelog/$VERSION.pt_BR.md" \
+                 URL="https://github.com/$DIST_OWNER/stein-sdk/releases/tag/v$VERSION"
+          bash sdk/.github/scripts/discord.sh changelog
+          bash sdk/.github/scripts/discord.sh downloads || true
+          echo "(dry run: nothing was published)"
+
+      - name: Publish (${{ env.DIST_OWNER }}/stein-sdk)
+        if: env.ENSAIO != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.DIST_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SEED_OWNER: ${{ vars.MIRROR_OWNER || 'x4vieer' }}
+        run: |
+          bash sdk/.github/scripts/publish-sdk.sh "$DIST_OWNER/stein-sdk" DIST_TOKEN \
+            "$(git -C sdk log -1 --format=%an)" "$(git -C sdk log -1 --format=%ae)"
+
+      - name: Mirror (${{ env.MIRROR_OWNER }}/stein-sdk)
+        if: env.ENSAIO != 'true' && env.MIRROR_OWNER != ''
+        env:
+          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          bash sdk/.github/scripts/publish-sdk.sh "$MIRROR_OWNER/stein-sdk" MIRROR_TOKEN \
+            "$MIRROR_OWNER" "$MIRROR_OWNER@users.noreply.github.com"
+
+      - name: Discord
+        if: env.ENSAIO != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.DIST_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CANAL_DOWNLOADS: ${{ vars.DISCORD_CANAL_DOWNLOADS }}
+          DISCORD_CANAL_CHANGELOG: ${{ vars.DISCORD_CANAL_CHANGELOG }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          export ROTULO="Stein SDK" VERSAO="$VERSION" NOTAS="sdk/changelog/$VERSION.pt_BR.md" \
+                 URL="https://github.com/$DIST_OWNER/stein-sdk/releases/tag/v$VERSION"
+          bash sdk/.github/scripts/discord.sh changelog
+          bash sdk/.github/scripts/discord.sh downloads

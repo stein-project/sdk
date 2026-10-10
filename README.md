@@ -9,7 +9,7 @@ This guide covers everything you need to write, build and ship a mod.
 > change between Stein Loader versions. Tell us what you miss — this is the time to shape it.
 
 **Download** `stein-mod-template.zip` (and `stein-sdk.jar` if you build without Gradle) from the
-[latest release](https://github.com/x4vieer/stein-sdk/releases/latest). **Example:** [`examples/damage-indicator`](examples/damage-indicator) is a
+[latest release](https://github.com/Stein-Project/stein-sdk/releases/latest). **Example:** [`examples/damage-indicator`](examples/damage-indicator) is a
 complete mod — damage numbers over entities, a HUD element, a Panel page with a slider and a key picker, and a key that
 turns the numbers on and off. **Licence:** the SDK, the API, the template and the examples are [MIT](LICENSE).
 
@@ -68,7 +68,7 @@ The project is an ordinary Gradle project using the plugin `dev.xavier.stein.mod
 // settings.gradle
 pluginManagement {
     repositories {
-        maven { url = uri("https://raw.githubusercontent.com/x4vieer/stein-sdk/maven") }
+        maven { url = uri("https://raw.githubusercontent.com/Stein-Project/stein-sdk/maven") }
         gradlePluginPortal()
     }
 }
