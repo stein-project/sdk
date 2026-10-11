@@ -4,8 +4,7 @@
 #   git tag v0.2.4 && git push origin v0.2.4      the tag must be v<Sdk.VERSION>
 #
 # Run by hand (Actions > release > Run workflow) it is a dry run (ensaio): it builds, runs the tests, checks the
-# changelog, keeps the files (and the Maven repository) as a workflow artifact and prints the notes and the Discord
-# messages, publishing nothing.
+# changelog, keeps the files (and the Maven repository) as a workflow artifact and prints the notes, publishing nothing.
 #
 # On a tag:
 #   1. the changelog is required before anything is built: changelog/<version>.en_US.md and .pt_BR.md;
@@ -15,14 +14,12 @@
 #      branch of the old account, LEGACY_OWNER/stein-sdk, read only, so the old versions are served from the new
 #      address too); release v<version> gets stein-sdk.jar and stein-mod-template.zip. The template and the plugin
 #      read both (template/settings.gradle, SdkTool.RELEASES). The old x4vieer/stein-sdk is frozen: nothing goes there;
-#   3. Discord: the notes in #changelog and the downloads message rewritten (optional, as in the installer).
 # Running the same tag again publishes nothing twice.
 #
 # Settings of this repository (see LEIA-ME.md of the local stein-project folder):
 #   secrets    LOADER_DEPLOY_KEY, BRIDGE_DEPLOY_KEY   read the private sibling repositories
-#              DIST_TOKEN (Contents: read and write on Stein-Project/stein-sdk), DISCORD_BOT_TOKEN (optional)
-#   variables  DIST_OWNER (optional, default Stein-Project), LEGACY_OWNER (optional, default x4vieer),
-#              DISCORD_CANAL_DOWNLOADS, DISCORD_CANAL_CHANGELOG (optional)
+#              DIST_TOKEN (Contents: read and write on Stein-Project/stein-sdk)
+#   variables  DIST_OWNER (optional, default Stein-Project), LEGACY_OWNER (optional, default x4vieer)
 name: release
 
 on:
@@ -151,10 +148,6 @@ jobs:
           echo "release v$VERSION -> $DIST_OWNER/stein-sdk:"
           ls dist; echo "main:"; find page -maxdepth 2 | sort
           echo "maven:"; find sdk/build/maven-repo -type f -name '*.pom'
-          export PRINT=1 ROTULO="Stein SDK" VERSAO="$VERSION" NOTAS="sdk/changelog/$VERSION.pt_BR.md" \
-                 URL="https://github.com/$DIST_OWNER/stein-sdk/releases/tag/v$VERSION"
-          bash sdk/.github/scripts/discord.sh changelog
-          bash sdk/.github/scripts/discord.sh downloads || true
           echo "(dry run: nothing was published)"
 
       - name: Publish (${{ env.DIST_OWNER }}/stein-sdk)
@@ -166,17 +159,3 @@ jobs:
         run: |
           bash sdk/.github/scripts/publish-sdk.sh "$DIST_OWNER/stein-sdk" DIST_TOKEN \
             "$(git -C sdk log -1 --format=%an)" "$(git -C sdk log -1 --format=%ae)"
-
-      - name: Discord
-        if: env.ENSAIO != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.DIST_TOKEN }}
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          DISCORD_CANAL_DOWNLOADS: ${{ vars.DISCORD_CANAL_DOWNLOADS }}
-          DISCORD_CANAL_CHANGELOG: ${{ vars.DISCORD_CANAL_CHANGELOG }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          export ROTULO="Stein SDK" VERSAO="$VERSION" NOTAS="sdk/changelog/$VERSION.pt_BR.md" \
-                 URL="https://github.com/$DIST_OWNER/stein-sdk/releases/tag/v$VERSION"
-          bash sdk/.github/scripts/discord.sh changelog
-          bash sdk/.github/scripts/discord.sh downloads

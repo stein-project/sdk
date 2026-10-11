@@ -2,7 +2,7 @@
 # Release notes written by hand before a release, one file per language:
 #
 #   changelog/<version>.en_US.md    the public release text (English)
-#   changelog/<version>.pt_BR.md    the Discord text (Portuguese)
+#   changelog/<version>.pt_BR.md    the Portuguese text, kept with the project
 #
 # Every file has the same shape:
 #
