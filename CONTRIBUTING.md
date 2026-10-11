@@ -5,9 +5,9 @@ covers the rules, code style, commits and the CLA. This page is what is specific
 
 ## Build and check
 
-With [loader](https://github.com/Stein-Project/loader) (and its [bridge](https://github.com/Stein-Project/bridge))
-cloned next to this repository; the SDK reads `../loader/build/libs/stein-api.jar`, so build the Loader first
-(`./gradlew build` there, or pass `-PloaderDir=...`):
+The SDK packs the Stein Loader API: the released one (`steinApiVersion` in `gradle.properties`, downloaded from the
+Maven repository), or the Loader built next to this repository (`../loader/build/libs`, or `-PloaderDir=...`) when
+there is one. The Stein Loader is not public, so contributors build against the released API:
 
 ```sh
 ./gradlew spotlessApply  # google-java-format --aosp on every Java file
@@ -21,7 +21,8 @@ A JDK 17 or newer starts Gradle; it finds or downloads the JDK 25 it runs and co
 (`gradle/gradle-daemon-jvm.properties`, regenerated with `./gradlew updateDaemonJvm --jvm-version=25`).
 
 The Bridge and the Loader build with this repository's `NamedBuild` and `OpenJar` (as an included build): a change
-to `Mappings`, `NamedBuild` or `OpenJar` also changes how they are built. Build them too before opening a pull request.
+to `Mappings`, `NamedBuild` or `OpenJar` also changes how they are built. Say so in the pull request: the maintainer
+builds them before merging.
 
 ## What to keep in mind
 

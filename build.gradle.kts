@@ -7,8 +7,8 @@
 //   ./gradlew spotlessApply  formats the Java code (google-java-format, AOSP style)
 //   ./gradlew publishPlugin  the Gradle plugin and the stein-api into build/maven-repo
 //
-// stein-sdk.jar carries the Loader's stein-api.jar: the loader repository sits next to this one (../loader, or
-// -PloaderDir=...), built first (./gradlew build there).
+// stein-sdk.jar carries the Loader's stein-api.jar: from the loader repository next to this one when it is built
+// (../loader, or -PloaderDir=...), otherwise the released one (steinApiVersion in gradle.properties).
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.util.zip.ZipFile
@@ -44,9 +44,45 @@ tasks.withType<JavaCompile>().configureEach {
     options.debugOptions.debugLevel = "source,lines"
 }
 
+// The stein-api this SDK packs: the Loader's own build when the loader repository sits next to this one, otherwise the
+// released one (steinApiVersion in gradle.properties) from the public Maven repository, so a clone of this repository
+// builds on its own.
 val loaderDir = file(findProperty("loaderDir") ?: "../loader")
-val steinApi = loaderDir.resolve("build/libs/stein-api.jar")
-val steinApiSources = loaderDir.resolve("build/libs/stein-api-sources.jar")
+val localApi = loaderDir.resolve("build/libs")
+val useLocalApi = localApi.resolve("stein-api.jar").isFile && localApi.resolve("stein-api-sources.jar").isFile
+val steinApiVersion = providers.gradleProperty("steinApiVersion").get()
+
+repositories {
+    maven {
+        name = "stein"
+        url = uri("https://raw.githubusercontent.com/Stein-Project/stein-sdk/maven")
+        content { includeModule("dev.xavier.stein", "stein-api") }
+    }
+}
+
+val steinApiRelease = configurations.detachedConfiguration(
+    dependencies.create("dev.xavier.stein:stein-api:$steinApiVersion"),
+    dependencies.create("dev.xavier.stein:stein-api:$steinApiVersion:sources"),
+).apply {
+    isTransitive = false
+    // Our own artifact, published by the SDK release; verification-metadata.xml covers the third-party libraries.
+    resolutionStrategy.disableDependencyVerification()
+}
+
+val steinApiJars = tasks.register<Sync>("steinApiJars") {
+    description = "Puts stein-api.jar and stein-api-sources.jar in build/stein-api: the Loader's or the released ones."
+    into(layout.buildDirectory.dir("stein-api"))
+    if (useLocalApi) {
+        from(localApi) { include("stein-api.jar", "stein-api-sources.jar") }
+    } else {
+        from(steinApiRelease) {
+            rename { if (it.endsWith("-sources.jar")) "stein-api-sources.jar" else "stein-api.jar" }
+        }
+        doFirst { logger.lifecycle("no Loader build in $loaderDir: packing the released stein-api $steinApiVersion") }
+    }
+}
+val steinApi = layout.buildDirectory.file("stein-api/stein-api.jar")
+val steinApiSources = layout.buildDirectory.file("stein-api/stein-api-sources.jar")
 
 // stein-sdk.jar: the SDK, ASM (BSD, licence alongside) and the Loader's stein-api with sources. Nothing from Mojang or
 // MCP: the SDK setup builds the game with readable names on the mod author's machine.
@@ -71,13 +107,13 @@ val sdkJar = tasks.register<Jar>("sdkJar") {
         into("META-INF")
         rename { "ASM-LICENSE.txt" }
     }
-    from(files(steinApi, steinApiSources)) {
+    from(steinApiJars) {
         into("stein")
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     doFirst {
-        check(steinApi.isFile && steinApiSources.isFile) {
-            "stein-api.jar not found in $loaderDir/build/libs: build the loader first (./gradlew build there)"
+        check(steinApi.get().asFile.isFile && steinApiSources.get().asFile.isFile) {
+            "no stein-api in build/stein-api: build the loader in $loaderDir, or check steinApiVersion"
         }
     }
 }

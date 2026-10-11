@@ -3,9 +3,9 @@
 # command line, and the template built by its own Gradle wrapper with the plugin. Minecraft 1.8.9 comes from Mojang's
 # CDN and is never published.
 #
-# The sibling repositories are read with deploy keys while they are private. Where the secrets are not available (pull
-# requests from forks), the ssh-key input is empty and actions/checkout falls back to plain https with the workflow
-# token, which reads them once they are public.
+# The Loader and the Bridge are private: with their deploy keys (pushes and pull requests from this repository) the SDK
+# packs the Loader built here; without them (pull requests from forks) it packs the released stein-api
+# (steinApiVersion in gradle.properties).
 name: build
 
 on:
@@ -19,16 +19,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      LOADER_KEY: ${{ secrets.LOADER_DEPLOY_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           path: sdk
-      - uses: actions/checkout@v4
+      - if: env.LOADER_KEY == 'true'
+        uses: actions/checkout@v4
         with:
           repository: Stein-Project/loader
           path: loader
           ssh-key: ${{ secrets.LOADER_DEPLOY_KEY }}
-      - uses: actions/checkout@v4
+      - if: env.LOADER_KEY == 'true'
+        uses: actions/checkout@v4
         with:
           repository: Stein-Project/bridge
           path: bridge
@@ -40,9 +44,11 @@ jobs:
       # Also checks that gradle-wrapper.jar is the official one.
       - uses: gradle/actions/setup-gradle@v4
       - name: Minecraft 1.8.9
+        if: env.LOADER_KEY == 'true'
         working-directory: bridge
         run: ./gradlew fetchMinecraft
       - name: The Loader's API
+        if: env.LOADER_KEY == 'true'
         working-directory: loader
         run: ./gradlew apiJar apiSourcesJar -Pstein.mcDir=${{ github.workspace }}/bridge/build/mc
       - name: Build and check

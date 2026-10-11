@@ -492,9 +492,8 @@ classes: a class is only looked up when the code using it runs.
 
 ## Building the SDK
 
-The SDK packs the Stein Loader API, so it is built after the Loader. Clone
-[bridge](https://github.com/Stein-Project/bridge), [loader](https://github.com/Stein-Project/loader) and this
-repository side by side, build the Loader (see its README), then:
+The SDK packs the Stein Loader API. A clone of this repository builds on its own: it downloads the released API
+(`steinApiVersion` in `gradle.properties`) from the Maven repository. Then:
 
 ```sh
 ./gradlew build            # build/sdk/stein-sdk.jar and build/sdk/stein-mod-template.zip
@@ -509,7 +508,7 @@ with. The first `templateTest` downloads Minecraft 1.8.9 from Mojang and the MCP
 
 ## Development
 
-This repository is private. The development guide is [CONTRIBUTING.md](CONTRIBUTING.md).
+The development guide is [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence
 
