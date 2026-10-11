@@ -7,7 +7,7 @@
 # changelog, keeps the files (and the Maven repository) as a workflow artifact and prints the notes, publishing nothing.
 #
 # On a tag:
-#   1. the changelog is required before anything is built: changelog/<version>.en_US.md and .pt_BR.md;
+#   1. the changelog is required before anything is built: changelog/<version>.en_US.md (.pt_BR.md optional);
 #   2. on Stein-Project/stein-sdk: main gets the guide (README.md without the sections for whoever builds the SDK),
 #      LICENSE, NOTICE and examples/; the "maven" branch gets the Gradle plugin dev.xavier.stein.mod and stein-api
 #      (added next to the earlier versions, never replacing them; the first time it starts as a copy of the public

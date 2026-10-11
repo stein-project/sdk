@@ -40,7 +40,7 @@ builds them before merging.
 
 ## Releases
 
-Push a `v<version>` tag matching `Sdk.VERSION`, with `changelog/<version>.en_US.md` and `.pt_BR.md` committed: the
+Push a `v<version>` tag matching `Sdk.VERSION`, with `changelog/<version>.en_US.md` (and optionally `.pt_BR.md`) committed: the
 release workflow builds, runs the tests and publishes `stein-sdk.jar`, `stein-mod-template.zip` and the guide.
 The template, the example and the guide pin the plugin version: change them with `Sdk.VERSION`.
 
