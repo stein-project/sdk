@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dev.xavier.stein.mod</groupId>
+  <artifactId>dev.xavier.stein.mod.gradle.plugin</artifactId>
+  <version>0.2.4</version>
+  <packaging>pom</packaging>
+  <name>Stein Loader mod</name>
+  <description>Builds Stein Loader mods (.steinmod) for the Minecraft 1.8.9 client with the Stein SDK.</description>
+  <url>https://github.com/Stein-Project/sdk</url>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://github.com/Stein-Project/sdk/blob/main/LICENSE</url>
+    </license>
+  </licenses>
+  <dependencies>
+    <dependency>
+      <groupId>dev.xavier.stein</groupId>
+      <artifactId>stein-gradle</artifactId>
+      <version>0.2.4</version>
+    </dependency>
+  </dependencies>
+</project>
