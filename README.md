@@ -341,7 +341,7 @@ anyone — that is up to whoever asks.
   nick -> group, "" for none, or null)` tells what group a player is in on a server with its own convention.
 - `onRelationsChanged()` arrives at the end of a tick in which anything changed.
 
-The official Combat mod is a provider (its lists, clans, URL feeds and colours); the HUD only asks.
+The Combat mod is a provider (its lists, clans, URL feeds and colours); the HUD only asks.
 
 ### Render
 
@@ -466,6 +466,54 @@ All mods share one class loader. Declare the other mod in `depends` (or `optiona
 your `libs/` (built with readable names, like your own code — only for compiling, it is not copied into your mod),
 and call it directly. With `optional`, check `Mods.isLoaded("theirid")` before touching any of its
 classes: a class is only looked up when the code using it runs.
+
+## Publishing your mod
+
+Players can put your `.steinmod` in their mods folder by hand, but then it never updates. To have the Stein Client
+install and update it, publish a **mod index**, `steinmods.json`, with every stable release, always at the same link:
+
+```text
+https://github.com/<you>/<repo>/releases/latest/download/steinmods.json
+```
+
+The player pastes that link (or the JSON itself) under third-party mods in the Stein Client, reads a security
+warning that names you and where the files come from, and from then on the client downloads each new version you
+release. One index can list one mod or several.
+
+```json
+{
+  "format": 1,
+  "name": "My mods",
+  "author": "You",
+  "homepage": "https://github.com/you/my-mod",
+  "source": "https://github.com/you/my-mod/releases/latest/download/steinmods.json",
+  "mods": [
+    {
+      "id": "mymod",
+      "modId": "mymod",
+      "name": "My Mod",
+      "version": "1.0.0",
+      "file": "MyMod.steinmod",
+      "url": "https://github.com/you/my-mod/releases/download/v1.0.0/MyMod.steinmod",
+      "sha256": "<sha256 of the file, 64 hex digits>",
+      "loader": "0.1.25",
+      "description": "One line for the mod list."
+    }
+  ]
+}
+```
+
+- `modId` is the `id` of your `steinmod.json`: the client refuses a download whose id is not the one the index says.
+- `file` is a plain file name ending in `.steinmod`; `url` must be `https`; `sha256` is checked before the file
+  enters the mods folder.
+- `loader` is the oldest Stein Loader your mod runs on, as in `steinmod.json`.
+- `source` is the link of the index itself: it is what a player who pastes the JSON ends up following.
+- An official mod with the same `modId` always wins over a third-party one.
+
+The [Combat](https://github.com/brenoxavier/SteinCombat) and [Mouse](https://github.com/brenoxavier/SteinMouse)
+repositories do all of this in their release workflow (`.github/workflows/release.yml` and
+`.github/scripts/mod.sh`): push a `v<version>` tag and they build the mod, check the changelog and publish the
+release with its `steinmods.json`. Copy them and change the mod's id and description at the top of the workflow.
 
 ## Rules of the road
 
