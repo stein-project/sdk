@@ -113,7 +113,7 @@ jobs:
             echo "(everything marked \`@Experimental\`). This SDK carries the API of Stein Loader $LOADER: in \`steinmod.json\`"
             echo "a mod asks for it with \`\"loader\": \"$LOADER\"\`."
             echo
-            echo "**Start:** unzip \`stein-mod-template.zip\` and run \`./gradlew build\` (JDK 17+ to run Gradle; the Gradle"
+            echo "**Start:** unzip \`stein-mod-template.zip\` and run \`./gradlew build\` (JDK 25 or newer; the Gradle"
             echo "plugin \`dev.xavier.stein.mod\` $VERSION downloads this SDK and builds the game with readable names on"
             echo "your machine). Without Gradle: with JDK 25, \`java -jar stein-sdk.jar setup\` once, then"
             echo "\`java -jar stein-sdk.jar build\`. The guide, an example mod and the licence are in the"

@@ -17,7 +17,7 @@ there is one. The Stein Loader is not public, so contributors build against the 
 ./gradlew publishPlugin  # the Gradle plugin into build/maven-repo (-PsteinRepo=<folder>)
 ```
 
-A JDK 17 or newer starts Gradle; it finds or downloads the JDK 25 it runs and compiles with
+You need a JDK 25 or newer; Gradle finds or downloads the JDK 25 it runs and compiles with
 (`gradle/gradle-daemon-jvm.properties`, regenerated with `./gradlew updateDaemonJvm --jvm-version=25`).
 
 The Bridge and the Loader build with this repository's `NamedBuild` and `OpenJar` (as an included build): a change

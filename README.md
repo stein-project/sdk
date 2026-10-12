@@ -39,9 +39,9 @@ Loader gives you an event. If you need one that does not exist, ask for it (see 
 
 ## Quick start with Gradle
 
-You need **Java 17 or newer** to run Gradle and **Minecraft 1.8.9** installed. If you have never played 1.8.9, the
+You need **Java 25 or newer** and **Minecraft 1.8.9** installed. If you have never played 1.8.9, the
 SDK downloads the game from Mojang, the same way the launcher does. Nothing else to install: the Gradle wrapper
-downloads Gradle, and the template downloads **JDK 25** for compiling if you do not have it.
+downloads Gradle.
 
 Your mod is **Java 25**, not the Java 8 of Forge mods: it compiles with `--release 25`, and records, sealed types,
 pattern matching in `switch`, text blocks and `var` all work in game.
@@ -551,8 +551,7 @@ The SDK packs the Stein Loader API. A clone of this repository builds on its own
 ./gradlew publishPlugin    # the Gradle plugin and stein-api into build/maven-repo (-PsteinRepo=<folder>)
 ```
 
-You need a JDK 17 or newer to start Gradle (`JAVA_HOME`); Gradle finds or downloads the JDK 25 it runs and compiles
-with. The first `templateTest` downloads Minecraft 1.8.9 from Mojang and the MCP mappings into `build/sdk-home`.
+You need a JDK 25 or newer (`JAVA_HOME`); Gradle finds or downloads the JDK 25 it runs and compiles with. The first `templateTest` downloads Minecraft 1.8.9 from Mojang and the MCP mappings into `build/sdk-home`.
 [`test/apitest`](test/apitest) is an in-game test of the whole API (see its README).
 
 ## Development

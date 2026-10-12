@@ -2,7 +2,7 @@
 
 A starting point for a Stein Loader mod for Minecraft 1.8.9.
 
-With Gradle (Java 17+ to run it; JDK 25 is downloaded for compiling if you do not have it):
+With Gradle (Java 25 or newer):
 
 ```sh
 ./gradlew build         # -> build/libs/ExampleMod.steinmod   (Windows: gradlew build)
