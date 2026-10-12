@@ -1,8 +1,11 @@
 Stein SDK
 Copyright (c) 2026 Breno Xavier (https://github.com/brenoxavier)
 
-Part of Stein (https://github.com/Stein-Project). The SDK, the Gradle plugin, the mod template, the examples and the
-test mod are licensed under the MIT License (see LICENSE).
+Part of Stein (https://github.com/Stein-Project). The MIT License (see LICENSE) covers everything in this
+repository: the Stein SDK tool (src/main/java), the Gradle plugin (gradle-plugin/), the mod template (template/),
+the example mods (examples/) and the test mod (test/). It also covers the Stein Loader API shipped inside
+stein-sdk.jar (stein-api.jar and stein-api-sources.jar). The rest of the Stein Loader and the Stein Bridge are
+licensed under the Mozilla Public License 2.0, in their own repositories.
 
 The Stein name and logo are trademarks of Breno Xavier: see
 https://github.com/Stein-Project/.github/blob/main/TRADEMARK.md
