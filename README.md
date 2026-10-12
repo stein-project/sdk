@@ -183,7 +183,7 @@ A `.steinmod` is a jar with another extension (old Forge tries to load every `.j
   "entry": "com.example.examplemod.ExampleMod",
   "loader": "0.1.14",
   "depends": {"othermod": "1.2.0"},
-  "optional": {"steincombat": "0.1.12"},
+  "optional": {"steinhud": "0.1.11"},
   "access": ["net/minecraft/client/gui/GuiPlayerTabOverlay.drawPing"]
 }
 ```
@@ -341,7 +341,7 @@ anyone — that is up to whoever asks.
   nick -> group, "" for none, or null)` tells what group a player is in on a server with its own convention.
 - `onRelationsChanged()` arrives at the end of a tick in which anything changed.
 
-The Combat mod is a provider (its lists, clans, URL feeds and colours); the HUD only asks.
+A mod that marks allies and enemies (lists, clans, URL feeds and colours) is a provider; the HUD only asks.
 
 ### Render
 
@@ -510,8 +510,8 @@ release. One index can list one mod or several.
 - `source` is the link of the index itself: it is what a player who pastes the JSON ends up following.
 - An official mod with the same `modId` always wins over a third-party one.
 
-The [Combat](https://github.com/brenoxavier/SteinCombat) and [Mouse](https://github.com/brenoxavier/SteinMouse)
-repositories do all of this in their release workflow (`.github/workflows/release.yml` and
+The official mods do all of this in their release workflow (for example
+[HUD](https://github.com/Stein-Project/hud): `.github/workflows/release.yml` and
 `.github/scripts/mod.sh`): push a `v<version>` tag and they build the mod, check the changelog and publish the
 release with its `steinmods.json`. Copy them and change the mod's id and description at the top of the workflow.
 
