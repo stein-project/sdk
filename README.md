@@ -75,11 +75,11 @@ pluginManagement {
 
 // build.gradle
 plugins {
-    id 'dev.xavier.stein.mod' version '0.2.3'
+    id 'dev.xavier.stein.mod' version '0.2.4'
 }
 
 stein {                                          // all optional
-    sdkVersion = '0.2.3'                         // the stein-sdk.jar release to use (default: the plugin's version)
+    sdkVersion = '0.2.4'                         // the stein-sdk.jar release to use (default: the plugin's version)
     minecraftDir = file('D:/Games/.minecraft')   // if your .minecraft is not in the usual place
 }
 ```
@@ -285,6 +285,7 @@ it.
 | `Mods.isLoaded(id)`, `Mods.version(id)` | other mods |
 | `Inventory` | read the player inventory and the open window; move items with real clicks (`move`, `quickMove`, `swapHotbar`, `drop`, `equip`, `unequip`, raw `click`), open or closed inventory; slot rules (`accepts`, `room`, `isCraftingSlot`, `stacksWith`) — see below |
 | `Targeting` | who and what is on the crosshair line (`raycast`, every entity in order, the block that stops it; `raycast(query)` for longer looks with filters); plus the game's own `attack`, `swing` and `interact` |
+| `Gameplay` | switches that change how the game plays: sprint in all directions, no hit delay, sprint through the hit and no hit slowdown (Loader 0.1.25). Servers detect them: say so to the player and start them off |
 | `Entities` | health, max health, absorption, armour and hurt time of any entity; `self()` is you; the players in the world (`players`, `player(nick)`), `name`, `distance`, `isInvisible`; every loaded entity (`all`), its `kind` (player, hostile, passive), `typeName`, and its position and yaw for the frame being drawn (`x`, `y`, `z`, `yaw` with `partialTicks`) |
 | `Stacks` | item stacks: `create("diamond_sword", 1, damage)` for previews, `id`, `is(stack, "bow")`, `name`, `count`, `damage` / `maxDamage`, `sameKind`; `Inventory.count(s -> Stacks.is(s, "arrow"))` sums the inventory |
 | `Effects` | active potion effects as API values (`Effects.of(entity)`), their translated `name` with the level and `durationText` |
