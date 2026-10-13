@@ -6,10 +6,10 @@ Use it from `settings.gradle`:
 ```groovy
 pluginManagement {
     repositories {
-        maven { url = uri("https://raw.githubusercontent.com/x4vieer/stein-sdk/maven") }
+        maven { url = uri("https://raw.githubusercontent.com/Stein-Project/sdk/maven") }
         gradlePluginPortal()
     }
 }
 ```
 
-See the guide on the [main branch](https://github.com/x4vieer/stein-sdk).
+See the guide on the [main branch](https://github.com/Stein-Project/sdk).
