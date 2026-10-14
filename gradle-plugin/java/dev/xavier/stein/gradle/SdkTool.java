@@ -43,13 +43,14 @@ final class SdkTool {
     static final String MC_VERSION = "1.8.9";
 
     /**
-     * Where stein-sdk.jar releases are downloaded from. Stein-Project/stein-sdk is the public
-     * distribution repository (and the template's Maven repository lives on its "maven" branch); it
-     * changes only together with the template's settings.gradle and the guide. Plugins published
-     * before the move read x4vieer/stein-sdk, which is frozen with the versions already there.
+     * Where stein-sdk.jar releases are downloaded from: the releases of the SDK's own repository
+     * (whose "maven" branch is the template's Maven repository); it changes only together with the
+     * template's settings.gradle and the guide. Plugins published before the move read
+     * Stein-Project/stein-sdk (up to 0.2.4) or x4vieer/stein-sdk, both frozen with the versions
+     * already there.
      */
     private static final String RELEASES =
-            "https://github.com/Stein-Project/stein-sdk/releases/download/v";
+            "https://github.com/Stein-Project/sdk/releases/download/v";
 
     private SdkTool() {}
 

@@ -55,7 +55,7 @@ val steinApiVersion = providers.gradleProperty("steinApiVersion").get()
 repositories {
     maven {
         name = "stein"
-        url = uri("https://raw.githubusercontent.com/Stein-Project/stein-sdk/maven")
+        url = uri("https://raw.githubusercontent.com/Stein-Project/sdk/maven")
         content { includeModule("dev.xavier.stein", "stein-api") }
     }
 }
