@@ -1,5 +1,4 @@
-# Releases the SDK to the public distribution repository Stein-Project/stein-sdk. Ported from stein-master
-# release-sdk.yml and the sdk parts of _release.yml and tools/publish.sh.
+# Releases the SDK as a release of this repository, with the Gradle plugin on its "maven" branch.
 #
 #   git tag v0.2.4 && git push origin v0.2.4      the tag must be v<Sdk.VERSION>
 #
@@ -8,18 +7,14 @@
 #
 # On a tag:
 #   1. the changelog is required before anything is built: changelog/<version>.en_US.md (.pt_BR.md optional);
-#   2. on Stein-Project/stein-sdk: main gets the guide (README.md without the sections for whoever builds the SDK),
-#      LICENSE, NOTICE and examples/; the "maven" branch gets the Gradle plugin dev.xavier.stein.mod and stein-api
-#      (added next to the earlier versions, never replacing them; the first time it starts as a copy of the public
-#      branch of the old account, LEGACY_OWNER/stein-sdk, read only, so the old versions are served from the new
-#      address too); release v<version> gets stein-sdk.jar and stein-mod-template.zip. The template and the plugin
-#      read both (template/settings.gradle, SdkTool.RELEASES). The old x4vieer/stein-sdk is frozen: nothing goes there;
+#   2. the "maven" branch gets the Gradle plugin dev.xavier.stein.mod and stein-api (added next to the earlier
+#      versions, never replacing them; the first time it starts as a copy of the frozen Stein-Project/stein-sdk one,
+#      read only, so the old versions are served from the new address too); release v<version> gets stein-sdk.jar and
+#      stein-mod-template.zip. The template and the plugin read both (template/settings.gradle, SdkTool.RELEASES).
+#      Stein-Project/stein-sdk (up to 0.2.4) and x4vieer/stein-sdk are frozen: nothing goes there;
 # Running the same tag again publishes nothing twice.
 #
-# Settings of this repository (see LEIA-ME.md of the local stein-project folder):
-#   secrets    LOADER_DEPLOY_KEY, BRIDGE_DEPLOY_KEY   read the private sibling repositories
-#              DIST_TOKEN (Contents: read and write on Stein-Project/stein-sdk)
-#   variables  DIST_OWNER (optional, default Stein-Project), LEGACY_OWNER (optional, default x4vieer)
+# Nothing to set up: the release and the "maven" branch go to this repository with the workflow's own token.
 name: release
 
 on:
@@ -28,7 +23,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -39,7 +34,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      DIST_OWNER: ${{ vars.DIST_OWNER || 'Stein-Project' }}
       ENSAIO: ${{ github.event_name != 'push' }}
     steps:
       - uses: actions/checkout@v4
@@ -49,12 +43,10 @@ jobs:
         with:
           repository: Stein-Project/loader
           path: loader
-          ssh-key: ${{ secrets.LOADER_DEPLOY_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: Stein-Project/bridge
           path: bridge
-          ssh-key: ${{ secrets.BRIDGE_DEPLOY_KEY }}
 
       # First on purpose: a release without its notes stops in seconds, not after the build.
       - name: Version and changelog
@@ -84,22 +76,17 @@ jobs:
         working-directory: sdk
         run: ./gradlew build templateTest pluginTest
 
-      - name: Files, page and notes
+      - name: Files and notes
         env:
           VERSION: ${{ steps.version.outputs.version }}
           LOADER: ${{ steps.version.outputs.loader }}
         run: |
-          mkdir dist page
+          mkdir dist
           cp sdk/build/sdk/stein-sdk.jar sdk/build/sdk/stein-mod-template.zip dist/
           # Nothing from Mojang or MCP: setup uses the Minecraft jar already on the mod author's machine.
           for f in dist/*; do
             if unzip -Z1 "$f" | grep -qE '1\.8\.9|minecraft'; then echo "::error::$f has game files inside"; exit 1; fi
           done
-          # The page of the distribution repository: the guide without the sections about building the SDK itself
-          # (they talk about this private repository), the licence, the notices and the examples as committed.
-          awk '/^## /{skip = ($0 == "## Building the SDK" || $0 == "## Development")} !skip' sdk/README.md > page/README.md
-          cp sdk/LICENSE sdk/NOTICE page/
-          git -C sdk archive --format=tar HEAD examples | tar -x -C page
           ch=sdk/changelog/$VERSION.en_US.md
           cl() { bash sdk/.github/scripts/changelog.sh "$1" "$ch"; }
           {
@@ -117,14 +104,14 @@ jobs:
             echo "plugin \`dev.xavier.stein.mod\` $VERSION downloads this SDK and builds the game with readable names on"
             echo "your machine). Without Gradle: with JDK 25, \`java -jar stein-sdk.jar setup\` once, then"
             echo "\`java -jar stein-sdk.jar build\`. The guide, an example mod and the licence are in the"
-            echo "[repository](https://github.com/$DIST_OWNER/stein-sdk)."
+            echo "[repository](https://github.com/$GITHUB_REPOSITORY)."
             echo
             echo "Nothing from Mojang or MCP is inside: \`setup\` uses the Minecraft jar already on your machine."
             echo
             echo "**SHA-256**"
             for f in dist/*; do echo "\`$(basename "$f")\` \`$(sha256sum "$f" | cut -d' ' -f1)\`"; done
           } > notes.md
-          ls -la dist page
+          ls -la dist
           echo "::group::release notes"; cat notes.md; echo "::endgroup::"
 
       - name: Keep the files (dry run)
@@ -134,7 +121,6 @@ jobs:
           name: stein-sdk-${{ steps.version.outputs.version }}
           path: |
             dist/
-            page/
             notes.md
             sdk/build/maven-repo/
           retention-days: 14
@@ -142,20 +128,18 @@ jobs:
       - name: What it would publish (dry run)
         if: env.ENSAIO == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          echo "release v$VERSION -> $DIST_OWNER/stein-sdk:"
-          ls dist; echo "main:"; find page -maxdepth 2 | sort
+          echo "release v$VERSION -> $GITHUB_REPOSITORY:"
+          ls dist
           echo "maven:"; find sdk/build/maven-repo -type f -name '*.pom'
           echo "(dry run: nothing was published)"
 
-      - name: Publish (${{ env.DIST_OWNER }}/stein-sdk)
+      - name: Publish
         if: env.ENSAIO != 'true'
         env:
-          GH_TOKEN: ${{ secrets.DIST_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
-          LEGACY_OWNER: ${{ vars.LEGACY_OWNER || 'x4vieer' }}
+          LEGACY_REPO: Stein-Project/stein-sdk
         run: |
-          bash sdk/.github/scripts/publish-sdk.sh "$DIST_OWNER/stein-sdk" DIST_TOKEN \
-            "$(git -C sdk log -1 --format=%an)" "$(git -C sdk log -1 --format=%ae)"
+          bash sdk/.github/scripts/publish-sdk.sh "$GITHUB_REPOSITORY"             "$(git -C sdk log -1 --format=%an)" "$(git -C sdk log -1 --format=%ae)"

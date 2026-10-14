@@ -44,9 +44,9 @@ Push a `v<version>` tag matching `Sdk.VERSION`, with `changelog/<version>.en_US.
 release workflow builds, runs the tests and publishes `stein-sdk.jar`, `stein-mod-template.zip` and the guide.
 The template, the example and the guide pin the plugin version: change them with `Sdk.VERSION`.
 
-The release goes to the public distribution repository `Stein-Project/stein-sdk`: the files on its release, the guide,
-the examples, `LICENSE` and `NOTICE` on its `main` branch, and the Gradle plugin and `stein-api` on its `maven` branch.
-The Gradle plugin downloads `stein-sdk.jar` from those releases and the template reads the plugin from that `maven`
-branch (`SdkTool.RELEASES`, `template/settings.gradle`, the examples, the guide); move them together. Plugins and
-templates published before the move read `x4vieer/stein-sdk`, which is frozen: they keep the versions already
-there, and new versions go only to `Stein-Project/stein-sdk` (whose `maven` branch started as a copy of the old one).
+The release goes to this repository: the files on its release, and the Gradle plugin and `stein-api` on its `maven`
+branch. The Gradle plugin downloads `stein-sdk.jar` from those releases and the template reads the plugin from that
+`maven` branch (`SdkTool.RELEASES`, `template/settings.gradle`, the examples, the guide); move them together. Plugins
+and templates published before the move read `Stein-Project/stein-sdk` (up to 0.2.4) or `x4vieer/stein-sdk`, both
+frozen: they keep the versions already there, and new versions go only here (the `maven` branch started as a copy of
+`Stein-Project/stein-sdk`'s).
