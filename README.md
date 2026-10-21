@@ -75,11 +75,11 @@ pluginManagement {
 
 // build.gradle
 plugins {
-    id 'dev.xavier.stein.mod' version '0.2.5'
+    id 'dev.xavier.stein.mod' version '0.2.6'
 }
 
 stein {                                          // all optional
-    sdkVersion = '0.2.5'                         // the stein-sdk.jar release to use (default: the plugin's version)
+    sdkVersion = '0.2.6'                         // the stein-sdk.jar release to use (default: the plugin's version)
     minecraftDir = file('D:/Games/.minecraft')   // if your .minecraft is not in the usual place
 }
 ```
@@ -297,7 +297,7 @@ it.
 | `Tasks`, `Http` | work off the game thread and back on it (`async`, `later`, `onGameThread`); `Http.getText` |
 | `Relations`, `Players` | who is ally / enemy / in your group, for every mod — see below; the Tab list, teams, groups, ping; `Players.list()` reads the whole Tab list in one pass (use it instead of asking nick by nick when drawing a list), plus the Tab `header`/`footer` and the list score |
 | `Render`, `WorldRender`, `Mesh`, `Blend` | 2D and 3D drawing without touching OpenGL — see Render and Drawing below (3D, lines, meshes and blend modes: Loader 0.1.24); also polygon fans, repeating textures (`texture(w, h, true)` + `drawFan`), items with your own count, effect icons, the Tab ping bars, player heads with the original skin on offline servers, text wrapping and the GUI size |
-| `Server`, `Account` | the current server (normalised address, `connect`, `connectingAddress`), the session (offline nick, launcher account; never the token) |
+| `Server`, `Account` | the current server (normalised address, `connect`, `connectingAddress`, and whether it allows a feature: `allows("minimap")`, `restrictedBy` — the server rules of the Stein registry, Loader 0.1.28), the session (offline nick, launcher account; never the token) |
 | `Lang.tr(key, args)` | your `assets/<id>/lang/*.lang` in the player's language (English as fallback); also `ctx.tr(...)` |
 | `Chat` | a line in the chat only for the player (`print`), the action bar, sending as the player (`send`, goes through `onSendChat`), reading and making text components |
 | `Screens` | which screen is open (`kind`: menu, multiplayer, disconnected, inventory, container…), its size, and the game's buttons (`button`, `buttonId`, `setLabel`) for `onGuiInit` / `onGuiAction` |
