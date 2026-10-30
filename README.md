@@ -75,11 +75,11 @@ pluginManagement {
 
 // build.gradle
 plugins {
-    id 'dev.xavier.stein.mod' version '0.2.6'
+    id 'dev.xavier.stein.mod' version '0.2.7'
 }
 
 stein {                                          // all optional
-    sdkVersion = '0.2.6'                         // the stein-sdk.jar release to use (default: the plugin's version)
+    sdkVersion = '0.2.7'                         // the stein-sdk.jar release to use (default: the plugin's version)
     minecraftDir = file('D:/Games/.minecraft')   // if your .minecraft is not in the usual place
 }
 ```
