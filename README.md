@@ -199,6 +199,27 @@ A `.steinmod` is a jar with another extension (old Forge tries to load every `.j
 | `optional` | | Mods you use when present. If present, they must be at least that version; they load before you. |
 | `access` | | Protected game methods you call from outside their class hierarchy (see below). Compile-time only. |
 | `announce` | | `false` keeps the mod out of the list the Loader sends to multiplayer servers (it still shows in the player's mod list). Default `true`. Loader 0.1.16+. |
+| `features` | | What a server can turn off in your mod, a list of names. It goes in the list sent to the server, and your mod asks `Server.allows("name")` before using each one. |
+| `source` | | The `https` address of your mod's index (`steinmods.json`). The player's Panel then says when a newer version is out. |
+
+## What a server can turn off
+
+A server can turn off a whole mod or a feature of it, on the `SteinLoader` plugin channel (format byte `1`, then a
+length-prefixed string, the same as the list the Loader sends):
+
+```json
+{"disable":[{"mod":"steinminimap","feature":"minimap"},{"mod":"steincombat"}]}
+```
+
+Every packet is the complete list, so an empty one gives everything back; leaving the server does too. The Loader
+answers with the list of mods again, with what is off in `disabled`. Nothing the player chose changes.
+
+- **A feature**: your mod leaves it off, asking `Server.allows("name")`.
+- **A whole mod**: the Loader stops your events and takes your HUD elements, your Panel page and your keys out of the
+  game, whatever your mod does. `onSuspend` and `onResume` are for what it cannot see: threads of your own, something
+  you set on the game. A key you hold with `hold(true)` is let go; hold it again in `onResume` if you want it back.
+
+This rests on the client's word: it is a request, and a changed client can ignore it.
 
 ## Game names and private members
 
@@ -297,7 +318,7 @@ it.
 | `Tasks`, `Http` | work off the game thread and back on it (`async`, `later`, `onGameThread`); `Http.getText` |
 | `Relations`, `Players` | who is ally / enemy / in your group, for every mod — see below; the Tab list, teams, groups, ping; `Players.list()` reads the whole Tab list in one pass (use it instead of asking nick by nick when drawing a list), plus the Tab `header`/`footer` and the list score |
 | `Render`, `WorldRender`, `Mesh`, `Blend` | 2D and 3D drawing without touching OpenGL — see Render and Drawing below (3D, lines, meshes and blend modes: Loader 0.1.24); also polygon fans, repeating textures (`texture(w, h, true)` + `drawFan`), items with your own count, effect icons, the Tab ping bars, player heads with the original skin on offline servers, text wrapping and the GUI size |
-| `Server`, `Account` | the current server (normalised address, `connect`, `connectingAddress`, and whether it allows a feature: `allows("minimap")`, `restrictedBy` — the server rules of the Stein registry, Loader 0.1.28), the session (offline nick, launcher account; never the token) |
+| `Server`, `Account` | the current server (normalised address, `connect`, `connectingAddress`, and whether it allows a feature: `allows("name")`, `restrictedBy`: the server decides, see below) |
 | `Lang.tr(key, args)` | your `assets/<id>/lang/*.lang` in the player's language (English as fallback); also `ctx.tr(...)` |
 | `Chat` | a line in the chat only for the player (`print`), the action bar, sending as the player (`send`, goes through `onSendChat`), reading and making text components |
 | `Screens` | which screen is open (`kind`: menu, multiplayer, disconnected, inventory, container…), its size, and the game's buttons (`button`, `buttonId`, `setLabel`) for `onGuiInit` / `onGuiAction` |
