@@ -1,0 +1,80 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "dev.xavier.stein",
+    "module": "stein-gradle",
+    "version": "0.2.9",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.8.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "stein-gradle-0.2.9.jar",
+          "url": "stein-gradle-0.2.9.jar",
+          "size": 23321,
+          "sha512": "24797f379f08fd295850001c8cabeceed3b1a5db7b22983342e02f5d96659196868304dbd1cfe81c98ae7e5891ef82de6cd30e6af9583996fdefcdf8c4f37a32",
+          "sha256": "0db355aa671f92111351371c72205eeb56a4882f5188697e2d92c29f894eb4c1",
+          "sha1": "1d6c97b8bb346532355cab3db267305005bfb4a8",
+          "md5": "594c4ed400cc3dcd73eb146af2120c00"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "stein-gradle-0.2.9.jar",
+          "url": "stein-gradle-0.2.9.jar",
+          "size": 23321,
+          "sha512": "24797f379f08fd295850001c8cabeceed3b1a5db7b22983342e02f5d96659196868304dbd1cfe81c98ae7e5891ef82de6cd30e6af9583996fdefcdf8c4f37a32",
+          "sha256": "0db355aa671f92111351371c72205eeb56a4882f5188697e2d92c29f894eb4c1",
+          "sha1": "1d6c97b8bb346532355cab3db267305005bfb4a8",
+          "md5": "594c4ed400cc3dcd73eb146af2120c00"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "stein-gradle-0.2.9-sources.jar",
+          "url": "stein-gradle-0.2.9-sources.jar",
+          "size": 13845,
+          "sha512": "55c87264f554f2148fff014c0e1ff334aacf5a9b72a92ea475e0f7473a995d0b7d43a92f52c3dc4fe6055e080d593664f97bf2f58348ad99d93e27043242c4be",
+          "sha256": "e8d3ddbfe4f0e5da361bf113f5baccadf99d82636046d475fc57150a674b23de",
+          "sha1": "fe14414abc031f46c4d872a1440bb984c101a6e8",
+          "md5": "7b1364f0a71587af921bb38af4115b69"
+        }
+      ]
+    }
+  ]
+}
